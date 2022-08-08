@@ -116,3 +116,26 @@ index_driver: default
 
             print("Any other error happened. Please check error output:\n{}".format(output))
             sys.exit(256)
+
+
+def check_global_data_folder(global_data_folder):
+
+    data_folder = Path(global_data_folder).resolve()
+    if not os.path.exists(data_folder):
+        logging.error("Global data folder '{}' not existing."
+                      .format(data_folder))
+    elif not os.access(data_folder, os.W_OK):
+        logging.error("Global data folder '{}' exists but is not writable".format(data_folder))
+        exit(32)
+    logger.info("Ensured global data folder existence '{}'".format(data_folder))
+
+
+def unzip(zip_file, out_folder):
+    """
+    Unzip zip file.
+    :param zip_file: name of zip file to be unzipped
+    :param out_folder: destination of unzipped content
+    """
+
+    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+        zip_ref.extractall(out_folder)
