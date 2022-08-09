@@ -1,6 +1,5 @@
 import os
-from anthroprotect import Anthroprotect
-
+from anthroprotect import AnthroprotectLoader
 
 #
 # Open Data Cube configuration
@@ -8,11 +7,17 @@ from anthroprotect import Anthroprotect
 DATACUBE_CONF = os.getenv('DATACUBE_CONF', 'datacube.conf')
 
 #
-# AnthroProtect dataset
+# Folders
+# - GLOBAL_DATA_FOLDER: parent folder where data and metadata (odc yaml files) from all datasets are stored
+#
+# ToDo: create folder where only metadata (odc yaml files) are stored?
+GLOBAL_DATA_FOLDER = os.getenv('GLOBAL_DATA_FOLDER', '/DATA')
+
+#
+# AnthroProtect dataset (http://rs.ipb.uni-bonn.de/data/anthroprotect/)
 # Dataset size: 19,5 GB (anthroprotect.zip) -> 48,7 GB (unzipped)
 #
 ANTHROPROTECT_ENABLED = os.getenv('ANTHROPROTECT_ENABLED', False)
-
 
 #
 # Datasets to be added to Open Data Cube
@@ -20,4 +25,4 @@ ANTHROPROTECT_ENABLED = os.getenv('ANTHROPROTECT_ENABLED', False)
 #
 DATASETS = []
 if ANTHROPROTECT_ENABLED:
-    DATASETS = DATASETS + ('anthroprotect', Anthroprotect)
+    DATASETS = DATASETS + ('anthroprotect', AnthroprotectLoader)

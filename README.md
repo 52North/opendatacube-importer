@@ -6,9 +6,11 @@ datacube dataset add metadata/anthroprotect.odc-metadata.yaml
 ```
 
 
-# Data
+## Data
 
-Folder structure:
+### AnthroProtect dataset
+
+**Folder structure:**
 ```
 anthroprotect
 |_ tiles
@@ -30,9 +32,7 @@ The investigative folder contains 67 Sentinel-2 scenes.
 
 "Images are ﬁltered for the time period of summer 2020 (July 1st to August 30th)."
 
-# Open Data Cube
-
-Datacube products:
+**Open Data Cube products (can be configured differently):**
 
 * s2-anthropo
 * s2-wdpa-Ia
@@ -47,3 +47,7 @@ Datacube products:
 * s2_scl-wdpa-Ib
 * s2_scl-wdpa-II
 * s2_investigative
+
+## Extend with new data provider/dataset
+
+Implement a new loader class that inherits from `loader.BasicLoader`. One example is given by `anthroprotect.AnthroprotectLoader`.
