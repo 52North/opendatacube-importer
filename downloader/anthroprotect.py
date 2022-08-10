@@ -180,9 +180,8 @@ class AnthroprotectLoader(BasicLoader):
             self.product_names = ['s2_anthropo', 's2_wdpa_Ia', 's2_wdpa_Ib', 's2_wdpa_II', 'lcs_anthropo',
                                   'lcs_wdpa_Ia', 'lcs_wdpa_Ib', 'lcs_wdpa_II', 's2_scl_anthropo',
                                   's2_scl_wdpa_Ia', 's2_scl_wdpa_Ib', 's2_scl_wdpa_II', 's2_investigative']
-        self.product_dataset_map = self._create_product_dataset_map(global_data_folder)
 
-    def _create_product_dataset_map(self, global_data_folder):
+    def create_product_dataset_map(self, global_data_folder):
         """
         Create a dictionary with product names as keys and lists of datasets (full path to file) as values
         :param global_data_folder:
@@ -212,7 +211,7 @@ class AnthroprotectLoader(BasicLoader):
         assert product_dataset_map['s2_wdpa_Ib'] == product_dataset_map['s2_scl_wdpa_Ib'] == product_dataset_map['lcs_wdpa_Ib']
         assert product_dataset_map['s2_wdpa_II'] == product_dataset_map['s2_scl_wdpa_II'] == product_dataset_map['lcs_wdpa_II']
 
-        return product_dataset_map
+        self.product_dataset_map = product_dataset_map
 
     def _create_metadata_document(self, odc_product_name):
 
@@ -374,7 +373,7 @@ class AnthroprotectLoader(BasicLoader):
         out_folder = os.path.join(global_data_folder, self.folder)
 
         # Check existence of anthroprotect folder or zip file
-        if self.force_download is True:
+        if self.force_download:
             logger.info("'force_download' is 'True'. Delete folder '{}' recursively "
                         "and delete zip file '{}' if they exist.".format(out_folder, zip_file))
             if os.path.exists(out_folder):
