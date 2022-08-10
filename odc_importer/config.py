@@ -28,4 +28,4 @@ ANTHROPROTECT_ENABLED = os.getenv('ANTHROPROTECT_ENABLED', False)
 #
 DATASETS = []
 if ANTHROPROTECT_ENABLED:
-    DATASETS = DATASETS + ('anthroprotect', AnthroprotectLoader)
+    DATASETS.append(('anthroprotect', AnthroprotectLoader))
