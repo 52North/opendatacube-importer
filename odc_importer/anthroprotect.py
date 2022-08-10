@@ -380,7 +380,7 @@ class AnthroprotectLoader(BasicLoader):
                 os.remove(zip_file)
         elif os.path.exists(out_folder):
             logger.info("Folder '{}' already exists and 'force_download' is 'False'. "
-                        "Continue without download.".format(self.force_download, out_folder))
+                        "Continue without download.".format(out_folder))
             return True
         elif os.path.exists(zip_file):
             logger.info("Zip file '{}' already exists. Try to unzip.".format(zip_file))
