@@ -25,13 +25,12 @@
 # Public License for more details.
 #
 import os
-from pathlib import Path
 import logging
 
-from config import DATACUBE_CONF, GLOBAL_DATA_FOLDER, DATASETS
+from config import DATACUBE_CONF, DATA_FOLDER, DATASETS
 from utils import verify_database_connection, ensure_odc_connection_and_database_initialization, check_global_data_folder
 
-logging_config_file = Path(Path(__file__).parent, 'logging.yaml')
+logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
 level = logging.DEBUG
 if os.path.exists(logging_config_file):
     with open(logging_config_file, 'rt') as file:
@@ -111,37 +110,93 @@ def parse_parameter() -> argparse.Namespace:
     return args
 
 
-def create_product_yaml_eo3(odc_product_name, metadata_dict):
+def add_datasets_to_odc(loader, dc):
     """
-    Create product metadata in eo3 metadata format
+    Add datasets to Open Data Cube index
 
-    :param odc_product_name: product name
-    :param metadata_dict:
-    :return: `dict` of product metadata
+    :param loader: dataset loader
+    :param dc: Open Data Cube
+    :return: None
     """
 
-    assert odc_product_name == metadata_dict['name'] == metadata_dict['metadata']['product']['name']
+    odc_product_dataset_map = loader.get_product_dataset_map()
+    odc_product_names = loader.get_product_names()
 
-    measurements = []
-    for band in metadata_dict['bands']:
-        measurements.append(
-            {
-                'name': band,
-                'dtype': metadata_dict['bands'][band]['dtype'],
-                'units': metadata_dict['bands'][band]['unit'],
-                'nodata': metadata_dict['bands'][band]['nodata'],
-                'aliases': metadata_dict['bands'][band]['aliases'],
-            }
-        )
+    # ToDo: add option to overwrite yaml files?
 
-    product_yaml = {
-        'metadata_type': 'eo3',
-        'name': metadata_dict['name'],
-        'description': metadata_dict['description'],
-        'metadata': metadata_dict['metadata'],
-        'measurements': measurements,
-    }
-    return product_yaml
+    # Index datasets and save dataset yaml files
+    idx_product = 1
+    for odc_product in odc_product_names:
+        logger.info("[Product {}/{}] Start indexing datasets for product '{}'".format(
+            idx_product,
+            len(odc_product_names),
+            odc_product))
+        idx_dataset = 1
+        # 'odc_dataset' can be a file or a folder (e.g. when bands are in separate files like for Landsat 8)
+        for odc_dataset in odc_product_dataset_map[odc_product]:
+            if not os.path.exists(odc_dataset):
+                logger.info("Dataset '{}' does not exist! Continue with next.".format(odc_dataset))
+                continue
+            dataset_id = str(uuid.uuid5(uuid.NAMESPACE_URL, odc_dataset))
+            if not dc.index.datasets.get(id_=dataset_id) is None:
+                logger.info("[Dataset {}/{}] Dataset with id '{}' already in the index".format(
+                    idx_dataset,
+                    len(odc_product_dataset_map[odc_product]),
+                    dataset_id))
+            else:
+                dataset_metadata = loader.create_dataset_metadata_eo3(odc_product, odc_dataset)
+                dataset_yaml = create_dataset_yaml_eo3(odc_product, dataset_metadata)
+                # Note: be careful with choosing path and name of dataset yaml file because file or folder
+                # names might exist more than once (this is the case, e.g., for the AnthroProtect dataset)
+                # Put dataset yaml file next to the file/folder
+                file_or_folder_path, file_or_folder_name = os.path.split(os.path.normpath(odc_dataset))
+                dataset_filename = os.path.join(file_or_folder_path,
+                                                '{}.odc-metadata.yaml'.format(file_or_folder_name))
+                with open(dataset_filename, 'w') as f:
+                    yaml.dump(dataset_yaml, f, default_flow_style=False, sort_keys=False)
+                resolver = datacube.index.hl.Doc2Dataset(index=dc.index, eo3=True)
+                dataset = resolver(dataset_yaml, dataset_filename.as_uri())
+                dc.index.datasets.add(dataset[0])
+                logger.info("[{}/{}] Added dataset with id '{}' to the index".format(
+                    idx_dataset,
+                    len(odc_product_dataset_map[odc_product]),
+                    dataset_id))
+            idx_dataset = idx_dataset + 1
+        idx_product = idx_product + 1
+    return None
+
+
+def add_products_to_odc(loader, global_data_folder, dc):
+    """
+    Add product to Open Data Cube index
+
+    :param loader: dataset loader
+    :param global_data_folder: folder where data and metadata yamls are located
+    :param dc: Open Data Cube
+    :return: None
+    """
+
+    odc_product_names = loader.get_product_names()
+
+    # ToDo: add option to overwrite yaml files?
+
+    # Index products and save product yaml files
+    for odc_product in odc_product_names:
+        if odc_product not in dc.list_products()['name'].values:
+            product_metadata = loader.create_product_metadata_eo3(odc_product)
+            product_yaml = create_product_yaml_eo3(odc_product, product_metadata)
+            product_filename = os.path.join(global_data_folder,
+                                            loader.get_folder(),
+                                            '{}.odc-product.yaml'.format(odc_product))
+            if not os.path.exists(product_filename):
+                with open(product_filename, 'w') as f:
+                    yaml.dump(product_yaml, f, default_flow_style=False, sort_keys=False)
+            dc.index.products.add_document(product_yaml)
+            logger.info("Added product family '{}' to the index".format(odc_product))
+        else:
+            logger.info("Product family '{}' already in index".format(odc_product))
+
+    return None
 
 
 def create_dataset_yaml_eo3(odc_product_name, metadata_dict):
@@ -201,82 +256,37 @@ def create_dataset_yaml_eo3(odc_product_name, metadata_dict):
     return dataset_yaml
 
 
-def add_datasets_to_odc(global_data_folder, dc):
+def create_product_yaml_eo3(odc_product_name, metadata_dict):
     """
-    Add datasets to Open Data Cube index
+    Create product metadata in eo3 metadata format
 
-    :param global_data_folder: folder where data and metadata yamls are located
-    :param dc: Open Data Cube
-    :return: None
+    :param odc_product_name: product name
+    :param metadata_dict:
+    :return: `dict` of product metadata
     """
 
-    for dataset in DATASETS:
-        loader = dataset[1](global_data_folder)
-        odc_product_dataset_map = loader.get_product_dataset_map()
-        odc_product_names = loader.get_product_names()
-        logger.info("""
-        ------------------------------------------
-        Start indexing dataset '{}'
-        """.format(dataset[0]))
+    assert odc_product_name == metadata_dict['name'] == metadata_dict['metadata']['product']['name']
 
-        # ToDo: add option to overwrite yaml files?
+    measurements = []
+    for band in metadata_dict['bands']:
+        measurements.append(
+            {
+                'name': band,
+                'dtype': metadata_dict['bands'][band]['dtype'],
+                'units': metadata_dict['bands'][band]['unit'],
+                'nodata': metadata_dict['bands'][band]['nodata'],
+                'aliases': metadata_dict['bands'][band]['aliases'],
+            }
+        )
 
-        # Index products and save product yaml files
-        for odc_product in odc_product_names:
-            if odc_product not in dc.list_products()['name'].values:
-                product_metadata = loader.create_product_metadata_eo3(odc_product)
-                product_yaml = create_product_yaml_eo3(odc_product, product_metadata)
-                product_filename = os.path.join(global_data_folder,
-                                                loader.get_folder(),
-                                                '{}.odc-product.yaml'.format(odc_product))
-                if not os.path.exists(product_filename):
-                    with open(product_filename, 'w') as f:
-                        yaml.dump(product_yaml, f, default_flow_style=False, sort_keys=False)
-                dc.index.products.add_document(product_yaml)
-                logger.info("Added product family '{}' to the index".format(odc_product))
-            else:
-                logger.info("Product family '{}' already in index".format(odc_product))
-
-        # Index dataset and save dataset yaml files
-        idx_product = 1
-        for odc_product in odc_product_names:
-            logger.info("[Product {}/{}] Start indexing datasets for product '{}'".format(
-                idx_product,
-                len(odc_product_names),
-                odc_product))
-            idx_dataset = 1
-            # 'odc_dataset' can be a file or a folder (e.g. when bands are in separate files like for Landsat 8)
-            for odc_dataset in odc_product_dataset_map[odc_product]:
-                if not os.path.exists(odc_dataset):
-                    logger.info("Dataset '{}' does not exist! Continue with next.".format(odc_dataset))
-                    continue
-                dataset_id = str(uuid.uuid5(uuid.NAMESPACE_URL, odc_dataset))
-                if not dc.index.datasets.get(id_=dataset_id) is None:
-                    logger.info("[Dataset {}/{}] Dataset with id '{}' already in the index".format(
-                        idx_dataset,
-                        len(odc_product_dataset_map[odc_product]),
-                        dataset_id))
-                else:
-                    dataset_metadata = loader.create_dataset_metadata_eo3(odc_product, odc_dataset)
-                    dataset_yaml = create_dataset_yaml_eo3(odc_product, dataset_metadata)
-                    # Note: be careful with choosing path and name of dataset yaml file because file or folder
-                    # names might exist more than once (this is the case, e.g., for the AnthroProtect dataset)
-                    # Put dataset yaml file next to the file/folder
-                    file_or_folder_path, file_or_folder_name = os.path.split(os.path.normpath(odc_dataset))
-                    dataset_filename = os.path.join(file_or_folder_path,
-                                                    '{}.odc-metadata.yaml'.format(file_or_folder_name))
-                    with open(dataset_filename, 'w') as f:
-                        yaml.dump(dataset_yaml, f, default_flow_style=False, sort_keys=False)
-                    resolver = datacube.index.hl.Doc2Dataset(index=dc.index, eo3=True)
-                    dataset = resolver(dataset_yaml, dataset_filename.as_uri())
-                    dc.index.datasets.add(dataset[0])
-                    logger.info("[{}/{}] Added dataset with id '{}' to the index".format(
-                        idx_dataset,
-                        len(odc_product_dataset_map[odc_product]),
-                        dataset_id))
-                idx_dataset = idx_dataset + 1
-            idx_product = idx_product + 1
-    return None
+    product_yaml = {
+        'metadata_type': 'eo3',
+        'name': metadata_dict['name'],
+        'description': metadata_dict['description'],
+        'metadata': metadata_dict['metadata'],
+        'measurements': measurements,
+    }
+    return product_yaml
 
 
 def main():
@@ -294,6 +304,7 @@ def main():
         times_slept = times_slept + 1
 
     if not db_conn_ok:
+        logger.error("Could not connect to database!")
         exit(1024)
 
     ensure_odc_connection_and_database_initialization(args.db,
@@ -302,21 +313,31 @@ def main():
                                                       args.password,
                                                       '')
 
-    global_data_folder = GLOBAL_DATA_FOLDER
-
-    # Check data folder
+    # Set and check global data folder
+    global_data_folder = os.path.join('/odc', DATA_FOLDER)
     check_global_data_folder(global_data_folder)
 
-    # Download datasets
+    # Process datasets
     for dataset in DATASETS:
-        loader = dataset[0](global_data_folder)
+
+        logger.info("""
+        ------------------------------------------
+        Start downloading and indexing dataset '{}'
+        """.format(dataset[0]))
+
+        loader = dataset[1]()
+
+        # Download dataset
         download_success = loader.download(global_data_folder)
-        if len(loader.product_dataset_map) == 0 and download_success:
+        if not download_success:
+            logger.info("Could not download dataset '{}'.".format(dataset[0]))
+        elif len(loader.product_dataset_map) == 0:
             loader.create_product_dataset_map(global_data_folder)
 
-    # Add products and datasets to Open Data Cube index
-    dc = datacube.Datacube(config=DATACUBE_CONF)
-    add_datasets_to_odc(global_data_folder, dc)
+        # Add products and datasets to Open Data Cube index
+        dc = datacube.Datacube(config=DATACUBE_CONF)
+        add_products_to_odc(loader, global_data_folder, dc)
+        add_datasets_to_odc(loader, dc)
 
 
 if __name__ == '__main__':

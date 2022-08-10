@@ -1,16 +1,20 @@
-# testbed18-dockerfiles
+# Open Data Cube Importer
 
+*(Python) Tools to download data from predefined sources (e.g. Landsat) and add these to the Open Data Cube index.*
+
+## 1) Open Data Cube
+
+Example for indexing products and datasets from cli:
 ```commandline
 datacube product add metadata/anthroprotect.odc-product.yaml
 datacube dataset add metadata/anthroprotect.odc-metadata.yaml
 ```
 
+## 2) Datasets
 
-## Data
+### 2.1) AnthroProtect
 
-### AnthroProtect dataset
-
-**Folder structure:**
+#### 2.1.1) Folder structure
 ```
 anthroprotect
 |_ tiles
@@ -32,7 +36,7 @@ The investigative folder contains 67 Sentinel-2 scenes.
 
 "Images are ﬁltered for the time period of summer 2020 (July 1st to August 30th)."
 
-**Open Data Cube products (can be configured differently):**
+#### 2.1.2) Open Data Cube products (can be configured differently)
 
 * s2-anthropo
 * s2-wdpa-Ia
@@ -48,6 +52,32 @@ The investigative folder contains 67 Sentinel-2 scenes.
 * s2_scl-wdpa-II
 * s2_investigative
 
-## Extend with new data provider/dataset
+### 2.2) Landsat 8
+
+TBD (cf. Testbed-17)
+
+## 3) Add new dataset
 
 Implement a new loader class that inherits from `loader.BasicLoader`. One example is given by `anthroprotect.AnthroprotectLoader`.
+
+## 4) Docker
+
+
+### 4.1) Folder structure
+
+Python files:
+```
+/odc/odc_importer/*.py
+```
+
+Base folder for data and metadata files:
+```
+/odc/${DATA_FOLDER}
+/odc/DATA                        (default)
+```
+
+Subfolder for specific dataset:
+```
+/odc/${DATA_FOLDER}/<dataset>
+/odc/DATA/anthroprotect          (example)
+```

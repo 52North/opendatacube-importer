@@ -25,19 +25,19 @@
 # Public License for more details.
 #
 from contextlib import closing
-import logging.config
+import logging
 import os
-from pathlib import Path
 import psycopg2
 import socket
 import subprocess
 import sys
 import yaml
+import zipfile
 
 datacube_conf = 'datacube.conf'
 
-logging_config_file = Path(Path(__file__).parent, 'logging.yaml')
-level = logging.DEBUG
+# logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
+# level = logging.DEBUG
 logger = logging.getLogger(__name__)
 
 
@@ -120,14 +120,13 @@ index_driver: default
 
 def check_global_data_folder(global_data_folder):
 
-    data_folder = Path(global_data_folder).resolve()
-    if not os.path.exists(data_folder):
-        logging.error("Global data folder '{}' not existing."
-                      .format(data_folder))
-    elif not os.access(data_folder, os.W_OK):
-        logging.error("Global data folder '{}' exists but is not writable".format(data_folder))
+    if not os.path.exists(global_data_folder):
+        logger.error("Global data folder '{}' not existing."
+                     .format(global_data_folder))
+    elif not os.access(global_data_folder, os.W_OK):
+        logger.error("Global data folder '{}' exists but is not writable".format(global_data_folder))
         exit(32)
-    logger.info("Ensured global data folder existence '{}'".format(data_folder))
+    logger.info("Ensured global data folder existence '{}'".format(global_data_folder))
 
 
 def unzip(zip_file, out_folder):

@@ -29,7 +29,6 @@ import uuid
 import time
 import argparse
 import logging.config
-from pathlib import Path
 import shutil
 import yaml
 import datacube
@@ -41,7 +40,6 @@ from loader import BasicLoader
 from utils import verify_database_connection, ensure_odc_connection_and_database_initialization, unzip
 
 import requests
-import zipfile
 import re
 
 
@@ -144,7 +142,7 @@ S2_SCL_BANDS = {
     }
 }
 
-logging_config_file = Path(Path(__file__).parent, 'logging.yaml')
+logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
 level = logging.DEBUG
 if os.path.exists(logging_config_file):
     with open(logging_config_file, 'rt') as file:
@@ -165,7 +163,7 @@ logger = logging.getLogger(__name__)
 
 class AnthroprotectLoader(BasicLoader):
 
-    def __init__(self, global_data_folder):
+    def __init__(self):
         super().__init__()
         self.url = os.getenv('ANTHROPROTECT_URL', 'https://uni-bonn.sciebo.de/s/6wrgdIndjpfRJuA/download')
         self.zip_file = os.getenv('ANTHROPROTECT_ZIP', 'anthroprotect.zip')
@@ -180,6 +178,36 @@ class AnthroprotectLoader(BasicLoader):
             self.product_names = ['s2_anthropo', 's2_wdpa_Ia', 's2_wdpa_Ib', 's2_wdpa_II', 'lcs_anthropo',
                                   'lcs_wdpa_Ia', 'lcs_wdpa_Ib', 'lcs_wdpa_II', 's2_scl_anthropo',
                                   's2_scl_wdpa_Ia', 's2_scl_wdpa_Ib', 's2_scl_wdpa_II', 's2_investigative']
+
+    def _create_metadata_document(self, odc_product_name):
+
+        # keywords and links are needed for pygeoapi
+        keywords = ['AnthroProtect', 'Wilderness', 'Fennoscandia']
+
+        if odc_product_name.startswith('s2_scl'):
+            keywords = keywords + 'Sentinel-2 scene classiﬁcation map'
+        elif odc_product_name.startswith('s2_'):
+            keywords = keywords + 'Sentinel-2'
+        elif odc_product_name.startswith('lcs_'):
+            keywords = keywords + 'Land cover data'
+        else:
+            logger.error("No band information found for product '{}'".format(odc_product_name))
+
+        return {
+            'product': {
+                'name': odc_product_name
+            },
+            'keywords': keywords,
+            'links': [
+                {
+                    'type': 'text/html',
+                    'rel': 'canonical',
+                    'title': 'AnthroProtect dataset',
+                    'href': 'http://rs.ipb.uni-bonn.de/data/anthroprotect/',
+                    'hreflang': 'en-US'
+                }
+            ]
+        }
 
     def create_product_dataset_map(self, global_data_folder):
         """
@@ -212,36 +240,6 @@ class AnthroprotectLoader(BasicLoader):
         assert product_dataset_map['s2_wdpa_II'] == product_dataset_map['s2_scl_wdpa_II'] == product_dataset_map['lcs_wdpa_II']
 
         self.product_dataset_map = product_dataset_map
-
-    def _create_metadata_document(self, odc_product_name):
-
-        # keywords and links are needed for pygeoapi
-        keywords = ['AnthroProtect', 'Wilderness', 'Fennoscandia']
-
-        if odc_product_name.startswith('s2_scl'):
-            keywords = keywords + 'Sentinel-2 scene classiﬁcation map'
-        elif odc_product_name.startswith('s2_'):
-            keywords = keywords + 'Sentinel-2'
-        elif odc_product_name.startswith('lcs_'):
-            keywords = keywords + 'Land cover data'
-        else:
-            logger.error("No band information found for product '{}'".format(odc_product_name))
-
-        return {
-            'product': {
-                'name': odc_product_name
-            },
-            'keywords': keywords,
-            'links': [
-                {
-                    'type': 'text/html',
-                    'rel': 'canonical',
-                    'title': 'AnthroProtect dataset',
-                    'href': 'http://rs.ipb.uni-bonn.de/data/anthroprotect/',
-                    'hreflang': 'en-US'
-                }
-            ]
-        }
 
     def create_product_metadata_eo3(self, odc_product_name):
         """

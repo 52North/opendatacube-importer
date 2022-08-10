@@ -8,10 +8,10 @@ DATACUBE_CONF = os.getenv('DATACUBE_CONF', 'datacube.conf')
 
 #
 # Folders
-# - GLOBAL_DATA_FOLDER: parent folder where data and metadata (odc yaml files) from all datasets are stored
+# - DATA_FOLDER: parent folder where data and metadata (odc yaml files) from all datasets are stored
 #
 # ToDo: create folder where only metadata (odc yaml files) are stored?
-GLOBAL_DATA_FOLDER = os.getenv('GLOBAL_DATA_FOLDER', '/DATA')
+DATA_FOLDER = os.getenv('DATA_FOLDER', 'DATA')
 
 #
 # AnthroProtect dataset (http://rs.ipb.uni-bonn.de/data/anthroprotect/)
