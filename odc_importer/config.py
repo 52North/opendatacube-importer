@@ -8,9 +8,12 @@ DATACUBE_CONF = os.getenv('DATACUBE_CONF', 'datacube.conf')
 
 #
 # Folders
-# - DATA_FOLDER: parent folder where data and metadata (odc yaml files) from all datasets are stored
+# - BASE_FOLDER: base folder as absolute path (expected to be the parent of DATA_FOLDER)
+# - DATA_FOLDER: parent folder (relative to BASE_FOLDER) where data and metadata (odc yaml files)
+#                from all datasets are stored
 #
 # ToDo: create folder where only metadata (odc yaml files) are stored?
+BASE_FOLDER = os.getenv('BASE_FOLDER', '/odc')
 DATA_FOLDER = os.getenv('DATA_FOLDER', 'DATA')
 
 #

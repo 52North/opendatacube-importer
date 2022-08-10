@@ -27,7 +27,7 @@
 import os
 import logging
 
-from config import DATACUBE_CONF, DATA_FOLDER, DATASETS
+from config import DATACUBE_CONF, BASE_FOLDER, DATA_FOLDER, DATASETS
 from utils import verify_database_connection, ensure_odc_connection_and_database_initialization, check_global_data_folder
 
 logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
@@ -314,7 +314,7 @@ def main():
                                                       '')
 
     # Set and check global data folder
-    global_data_folder = os.path.join('/odc', DATA_FOLDER)
+    global_data_folder = os.path.join(BASE_FOLDER, DATA_FOLDER)
     check_global_data_folder(global_data_folder)
 
     # Process datasets

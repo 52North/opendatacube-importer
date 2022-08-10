@@ -42,8 +42,9 @@ ENV NO_PING=False
 ENV MAX_RETRIES=15
 ENV SLEEP=2
 ENV PYTHONUNBUFFERED=1
+ENV BASE_FOLDER=/odc
 ENV DATA_FOLDER=DATA
-ARG HOME=/odc
+ARG HOME=${BASE_FOLDER}
 
 LABEL maintainer="Pontius, Martin <m.pontius@52north.org>" \
       org.opencontainers.image.authors="Jürrens, Eike Hinderk <e.h.juerrens@52north.org>; Pontius, Martin <m.pontius@52north.org>" \
