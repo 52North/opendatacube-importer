@@ -234,10 +234,18 @@ class AnthroprotectLoader(BasicLoader):
                 logger.info("Product '{}' is missing in product-dataset-map!".format(odc_product))
 
         # Check if file names in subfolders are identical (they should be)
-        assert product_dataset_map['s2_anthropo'] == product_dataset_map['s2_scl_anthropo'] == product_dataset_map['lcs_anthropo']
-        assert product_dataset_map['s2_wdpa_Ia'] == product_dataset_map['s2_scl_wdpa_Ia'] == product_dataset_map['lcs_wdpa_Ia']
-        assert product_dataset_map['s2_wdpa_Ib'] == product_dataset_map['s2_scl_wdpa_Ib'] == product_dataset_map['lcs_wdpa_Ib']
-        assert product_dataset_map['s2_wdpa_II'] == product_dataset_map['s2_scl_wdpa_II'] == product_dataset_map['lcs_wdpa_II']
+        assert [os.path.basename(filename) for filename in product_dataset_map['s2_anthropo']] \
+               == [os.path.basename(filename) for filename in product_dataset_map['s2_scl_anthropo']] \
+               == [os.path.basename(filename) for filename in product_dataset_map['lcs_anthropo']]
+        assert [os.path.basename(filename) for filename in product_dataset_map['s2_wdpa_Ia']] \
+               == [os.path.basename(filename) for filename in product_dataset_map['s2_scl_wdpa_Ia']] \
+               == [os.path.basename(filename) for filename in product_dataset_map['lcs_wdpa_Ia']]
+        assert [os.path.basename(filename) for filename in product_dataset_map['s2_wdpa_Ib']] \
+               == [os.path.basename(filename) for filename in product_dataset_map['s2_scl_wdpa_Ib']] \
+               == [os.path.basename(filename) for filename in product_dataset_map['lcs_wdpa_Ib']]
+        assert [os.path.basename(filename) for filename in product_dataset_map['s2_wdpa_II']] \
+               == [os.path.basename(filename) for filename in product_dataset_map['s2_scl_wdpa_II']] \
+               == [os.path.basename(filename) for filename in product_dataset_map['lcs_wdpa_II']]
 
         self.product_dataset_map = product_dataset_map
 
