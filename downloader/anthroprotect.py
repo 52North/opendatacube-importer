@@ -362,12 +362,11 @@ class AnthroprotectLoader(BasicLoader):
 
         return dataset_metadata
 
-    def download(self, global_data_folder, force_download):
+    def download(self, global_data_folder):
         """
         Download anthroprotect dataset in chunks with given chunk size. Takes ~ >1 hour.
 
         :param global_data_folder:
-        :param force_download: download dataset even if it already exists
         :return: 'True' if anthroprotect folder was successfully created or already exists else 'False'
         """
 
@@ -375,7 +374,7 @@ class AnthroprotectLoader(BasicLoader):
         out_folder = os.path.join(global_data_folder, self.folder)
 
         # Check existence of anthroprotect folder or zip file
-        if force_download is True:
+        if self.force_download is True:
             logger.info("'force_download' is 'True'. Delete folder '{}' recursively "
                         "and delete zip file '{}' if they exist.".format(out_folder, zip_file))
             if os.path.exists(out_folder):
@@ -384,7 +383,7 @@ class AnthroprotectLoader(BasicLoader):
                 os.remove(zip_file)
         elif os.path.exists(out_folder):
             logger.info("Folder '{}' already exists and 'force_download' is 'False'. "
-                        "Continue without download.".format(force_download, out_folder))
+                        "Continue without download.".format(self.force_download, out_folder))
             return True
         elif os.path.exists(zip_file):
             logger.info("Zip file '{}' already exists. Try to unzip.".format(zip_file))

@@ -5,7 +5,7 @@ class BasicLoader:
         self.product_names = []
         self.force_download = False
 
-    def download(self, global_data_folder, force_download):
+    def download(self, global_data_folder):
         raise NotImplementedError("Implement this method in subclass!")
 
     def get_folder(self):

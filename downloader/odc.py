@@ -310,7 +310,7 @@ def main():
     # Download datasets
     for dataset in DATASETS:
         loader = dataset[0](global_data_folder)
-        loader.download(global_data_folder, loader.force_download)
+        loader.download(global_data_folder)
 
     # Add products and datasets to Open Data Cube index
     dc = datacube.Datacube(config=DATACUBE_CONF)
