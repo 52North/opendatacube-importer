@@ -41,7 +41,7 @@ datacube_conf = 'datacube.conf'
 logger = logging.getLogger(__name__)
 
 
-def verify_database_connection(db_name: str, db_host: str, db_user: str, db_password: str, no_ping: bool = False)\
+def verify_database_connection(db_name: str, db_host: str, db_port: int, db_user: str, db_password: str, no_ping: bool = False)\
         -> bool:
     if not no_ping:
         # ping host
@@ -54,18 +54,18 @@ def verify_database_connection(db_name: str, db_host: str, db_user: str, db_pass
     # check host port
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
         try:
-            if sock.connect_ex((db_host, 5432)) == 0:
-                logger.info("Database port '5432' on host '{}' is OPEN.".format(db_host))
+            if sock.connect_ex((db_host, db_port)) == 0:
+                logger.info("Database port '{}' on host '{}' is OPEN.".format(db_port, db_host))
             else:
-                logger.error("Database port '5432' on host '{}' is CLOSED.".format(db_host))
+                logger.error("Database port '{}' on host '{}' is CLOSED.".format(db_port, db_host))
                 return False
         except socket.gaierror:
             logger.error("Hostname '{}' could not be resolved.".format(db_host))
             return False
 
     # psql connect
-    with closing(psycopg2.connect("host={} dbname={} user={} password={}"
-                                  .format(db_host, db_name, db_user, db_password))) as db_conn:
+    with closing(psycopg2.connect("host={} port={} dbname={} user={} password={}"
+                                  .format(db_host, db_port, db_name, db_user, db_password))) as db_conn:
         if db_conn and not db_conn.closed:
             logger.info("Database connection to '{}' established".format(db_name))
         else:
@@ -74,8 +74,8 @@ def verify_database_connection(db_name: str, db_host: str, db_user: str, db_pass
     return True
 
 
-def ensure_odc_connection_and_database_initialization(db_name: str, db_host: str, db_user: str, db_pw: str,
-                                                      binary_home: str) -> None:
+def ensure_odc_connection_and_database_initialization(db_name: str, db_host: str, db_port: int, db_user: str,
+                                                      db_pw: str, binary_home: str) -> None:
     # Write datacube.conf to disk
     #
     # https://datacube-core.readthedocs.io/en/latest/ops/config.html#configuration-via-environment-variables
@@ -84,10 +84,11 @@ def ensure_odc_connection_and_database_initialization(db_name: str, db_host: str
         odc_config.write("""[default]
 db_database: {}
 db_hostname: {}
+db_port:     {}
 db_username: {}
 db_password: {}
 index_driver: default
-""".format(db_name, db_host, db_user, db_pw))
+""".format(db_name, db_host, db_port, db_user, db_pw))
 
     # Check datacube database init status
     cmd = subprocess.Popen("{}datacube --config {} system check".format(binary_home, datacube_conf),

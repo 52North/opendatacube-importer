@@ -58,13 +58,16 @@ def parse_parameter() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Add datasets to Open Data Cube index.')
     parser.add_argument('-s', '--host',
                         help="Database host name. Defaults to 'localhost'.",
-                        required=False, type=str, default="localhost")
+                        required=False, type=str, default='localhost')
+    parser.add_argument('-p', '--port',
+                        help="Database port. Defaults to 5432.",
+                        required=False, type=int, default=5432)
     parser.add_argument('-u', '--user',
                         help="Database user. Defaults to 'opendatacube'.",
-                        required=False, type=str, default="opendatacube")
+                        required=False, type=str, default='opendatacube')
     parser.add_argument('-a', '--password',
                         help="Database password. Defaults to 'opendatacube'.",
-                        required=False, type=str, default="opendatacube")
+                        required=False, type=str, default='opendatacube')
     parser.add_argument('-d', '--db',
                         help="Database name. Defaults to 'opendatacube'.",
                         required=False, type=str, default='opendatacube')
@@ -105,12 +108,13 @@ def parse_parameter() -> argparse.Namespace:
     OpenDataCube Connection Configuration
     -------------------------------------
     host        : '{}'
+    port        : '{}'
     user        : '{}'
     pass        : '{}'
     max retries : '{}'
     sleep       : '{}'
     """.format([dataset[0] for dataset in DATASETS], [dataset[1] for dataset in DATASETS],
-               args.host, args.user, len(args.password) * '*', args.max_retries, args.sleep))
+               args.host, args.port, args.user, len(args.password) * '*', args.max_retries, args.sleep))
 
     return args
 
@@ -302,7 +306,7 @@ def main():
     while times_slept < args.max_retries:
         # check "connection" to odc (?) or later
         logger.info("[{}/{}] Check database connection".format(str(times_slept + 1), str(args.max_retries)))
-        if verify_database_connection(args.db, args.host, args.user, args.password, args.no_ping):
+        if verify_database_connection(args.db, args.host, args.port, args.user, args.password, args.no_ping):
             db_conn_ok = True
             break
         time.sleep(args.sleep)
@@ -314,6 +318,7 @@ def main():
 
     ensure_odc_connection_and_database_initialization(args.db,
                                                       args.host,
+                                                      args.port,
                                                       args.user,
                                                       args.password,
                                                       '')
