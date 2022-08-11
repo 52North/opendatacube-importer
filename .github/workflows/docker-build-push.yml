@@ -1,4 +1,30 @@
-name: build push geonode
+# Copyright (C) 2022-2022 52°North Spatial Information Research GmbH
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as published
+# by the Free Software Foundation.
+#
+# If the program is linked with libraries which are licensed under one of
+# the following licenses, the combination of the program with the linked
+# library is not considered a "derivative work" of the program:
+#
+#     - Apache License, version 2.0
+#     - Apache Software License, version 1.0
+#     - GNU Lesser General Public License, version 3
+#     - Mozilla Public License, versions 1.0, 1.1 and 2.0
+#     - Common Development and Distribution License (CDDL), version 1.0
+#
+# Therefore the distribution of the program linked with libraries licensed
+# under the aforementioned licenses, is permitted by the copyright holders
+# if the distribution is compliant with both the GNU General Public
+# License version 2 and the aforementioned licenses.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+# Public License for more details.
+#
+name: build push docker image
 
 env:
   TITLE: "52°North OpenDataCube Importer Image"
@@ -33,11 +59,11 @@ jobs:
 #      - name: Cache Docker layers
 #        uses: actions/cache@v2
 #        with:
-#          path: /tmp/.buildx-geonode-cache/
-#          key: ${{ runner.os }}-buildx-geonode-${{ github.sha }}
-#          # key: ${{ runner.os }}-buildx-geonode-${{ hashFiles('geonode/Dockerfile') }}
+#          path: /tmp/.buildx-opendatacube-importer-cache/
+#          key: ${{ runner.os }}-buildx-opendatacube-importer-${{ github.sha }}
+#          # key: ${{ runner.os }}-buildx-opendatacube-importer-${{ hashFiles('Dockerfile') }}
 #          restore-keys: |
-#            ${{ runner.os }}-buildx-geonode-
+#            ${{ runner.os }}-buildx-opendatacube-importer-
 #            ${{ runner.os }}-buildx-
 
       - name: Set up Docker Buildkit env
@@ -67,13 +93,13 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
-#          cache-from: type=local,src=/tmp/.buildx-geonode-cache
-#          cache-to: type=local,dest=/tmp/.buildx-geonode-cache-new,mode=max
+#          cache-from: type=local,src=/tmp/.buildx-opendatacube-importer-cache
+#          cache-to: type=local,dest=/tmp/.buildx-opendatacube-importer-cache-new,mode=max
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
 #      - name: Move cache
 #        run: |
-#          rm -rfv /tmp/.buildx-geonode-cache
-#          mv -v /tmp/.buildx-geonode-cache-new /tmp/.buildx-geonode-cache
+#          rm -rfv /tmp/.buildx-opendatacube-importer-cache
+#          mv -v /tmp/.buildx-opendatacube-importer-cache-new /tmp/.buildx-opendatacube-importer-cache
