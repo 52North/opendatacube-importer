@@ -32,7 +32,7 @@ import time
 import uuid
 import yaml
 
-from config import DATACUBE_CONF, BASE_FOLDER, DATA_FOLDER, DATASETS
+from config import DATACUBE_CONF, BASE_FOLDER, DATA_FOLDER, DATASOURCES
 from utils import verify_database_connection, ensure_odc_connection_and_database_initialization, check_global_data_folder
 
 logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_parameter() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Add datasets to Open Data Cube index.')
+    parser = argparse.ArgumentParser(description='Add data from defined data sources to Open Data Cube index.')
     parser.add_argument('-s', '--host',
                         help="Database host name. Defaults to 'localhost'.",
                         required=False, type=str, default='localhost')
@@ -113,7 +113,7 @@ def parse_parameter() -> argparse.Namespace:
     pass        : '{}'
     max retries : '{}'
     sleep       : '{}'
-    """.format([dataset[0] for dataset in DATASETS], [dataset[1] for dataset in DATASETS],
+    """.format([dataset[0] for dataset in DATASOURCES], [dataset[1] for dataset in DATASOURCES],
                args.host, args.port, args.user, len(args.password) * '*', args.max_retries, args.sleep))
 
     return args
@@ -134,22 +134,20 @@ def add_datasets_to_odc(loader, dc):
     # ToDo: add option to overwrite yaml files?
 
     # Index datasets and save dataset yaml files
-    idx_product = 1
-    for odc_product in odc_product_names:
+    for idx_product, odc_product in enumrate(odc_product_names):
         logger.info("[Product {}/{}] Start indexing datasets for product '{}'".format(
-            idx_product,
+            idx_product+1,
             len(odc_product_names),
             odc_product))
-        idx_dataset = 1
         # 'odc_dataset' can be a file or a folder (e.g. when bands are in separate files like for Landsat 8)
-        for odc_dataset in odc_product_dataset_map[odc_product]:
+        for idx_dataset, odc_dataset in enumerate(odc_product_dataset_map[odc_product]):
             if not os.path.exists(odc_dataset):
                 logger.info("Dataset '{}' does not exist! Continue with next.".format(odc_dataset))
                 continue
             dataset_id = str(uuid.uuid5(uuid.NAMESPACE_URL, odc_dataset))
             if not dc.index.datasets.get(id_=dataset_id) is None:
                 logger.info("[Dataset {}/{}] Dataset with id '{}' already in the index".format(
-                    idx_dataset,
+                    idx_dataset+1,
                     len(odc_product_dataset_map[odc_product]),
                     dataset_id))
             else:
@@ -167,11 +165,9 @@ def add_datasets_to_odc(loader, dc):
                 dataset = resolver(dataset_yaml, dataset_filename.as_uri())
                 dc.index.datasets.add(dataset[0])
                 logger.info("[{}/{}] Added dataset with id '{}' to the index".format(
-                    idx_dataset,
+                    idx_dataset+1,
                     len(odc_product_dataset_map[odc_product]),
                     dataset_id))
-            idx_dataset = idx_dataset + 1
-        idx_product = idx_product + 1
     return None
 
 
@@ -327,27 +323,30 @@ def main():
     global_data_folder = os.path.join(BASE_FOLDER, DATA_FOLDER)
     check_global_data_folder(global_data_folder)
 
-    # Process datasets
-    for dataset in DATASETS:
+    logger.info("Start processing data sources")
 
-        logger.info("""
-        ------------------------------------------
-        Start downloading and indexing dataset '{}'
-        """.format(dataset[0]))
+    # Process data sources
+    for idx, datasource in enumerate(DATASOURCES):
 
-        loader = dataset[1]()
+        logger.info("[Data source {}/{}] Start downloading and indexing data from data source '{}'"
+                    .format(idx+1, len(DATASOURCES), datasource[0]))
 
-        # Download dataset
+        loader = datasource[1]()
+
+        # Download data from data source
         download_success = loader.download(global_data_folder)
         if not download_success:
-            logger.info("Could not download dataset '{}'.".format(dataset[0]))
-        elif len(loader.product_dataset_map) == 0:
-            loader.create_product_dataset_map(global_data_folder)
+            logger.warning("Could not download data from data source '{}'.".format(datasource[0]))
+        else:
+            if len(loader.product_dataset_map) == 0:
+                loader.create_product_dataset_map(global_data_folder)
 
-        # Add products and datasets to Open Data Cube index
-        dc = datacube.Datacube(config=DATACUBE_CONF)
-        add_products_to_odc(loader, global_data_folder, dc)
-        add_datasets_to_odc(loader, dc)
+            # Add products and datasets to Open Data Cube index
+            dc = datacube.Datacube(config=DATACUBE_CONF)
+            add_products_to_odc(loader, global_data_folder, dc)
+            add_datasets_to_odc(loader, dc)
+
+    logger.info("Finished processing data sources")
 
 
 if __name__ == '__main__':

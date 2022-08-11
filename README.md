@@ -56,7 +56,7 @@ The investigative folder contains 67 Sentinel-2 scenes.
 
 TBD (cf. Testbed-17)
 
-## 3) Add new dataset
+## 3) Add new data source
 
 Implement a new loader class that inherits from `loader.BasicLoader`. One example is given by `anthroprotect.AnthroprotectLoader`.
 
@@ -73,11 +73,11 @@ Python files:
 Base folder for data and metadata files:
 ```
 /odc/${DATA_FOLDER}
-/odc/DATA                        (default)
+/odc/DATA                         (default)
 ```
 
-Subfolder for specific dataset:
+Subfolder for specific data source:
 ```
-/odc/${DATA_FOLDER}/<dataset>
-/odc/DATA/anthroprotect          (example)
+/odc/${DATA_FOLDER}/<data source>
+/odc/DATA/anthroprotect           (example)
 ```

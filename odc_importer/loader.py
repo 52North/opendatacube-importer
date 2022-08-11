@@ -7,7 +7,7 @@ class BasicLoader:
 
     def create_dataset_metadata_eo3(self, odc_product_name, dataset):
         """
-        :param odc_product_name:
+        :param odc_product_name: str, product name
         :param dataset: str, can be a file or a folder (e.g. when bands are in separate files like for Landsat 8)
         :return:
         """
