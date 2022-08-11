@@ -185,11 +185,11 @@ class AnthroprotectLoader(BasicLoader):
         keywords = ['AnthroProtect', 'Wilderness', 'Fennoscandia']
 
         if odc_product_name.startswith('s2_scl'):
-            keywords = keywords + 'Sentinel-2 scene classiﬁcation map'
+            keywords = keywords + ['Sentinel-2 scene classiﬁcation map']
         elif odc_product_name.startswith('s2_'):
-            keywords = keywords + 'Sentinel-2'
+            keywords = keywords + ['Sentinel-2']
         elif odc_product_name.startswith('lcs_'):
-            keywords = keywords + 'Land cover data'
+            keywords = keywords + ['Land cover data']
         else:
             logger.error("No band information found for product '{}'".format(odc_product_name))
 
