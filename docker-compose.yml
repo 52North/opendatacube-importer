@@ -1,0 +1,36 @@
+version: '3'
+services:
+  database:
+    image: postgres:13-buster
+    volumes:
+     - odc-database-data:/var/lib/postgresql
+    environment:
+    - POSTGRES_USER=opendatacube
+    - POSTGRES_PASSWORD=opendatacube
+    - POSTGRES_DB=opendatacube
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+
+  opendatacube-importer:
+#    image: 52north/opendatacube-importer:latest
+    build:
+      context: .
+    environment:
+      - ANTHROPROTECT_ENABLED=True
+    env_file:
+      - docker.env
+    volumes:
+      - odc-data:/odc/DATA
+    depends_on:
+      - database
+
+volumes:
+  odc-database-data:
+    labels:
+      - "org.52north.contact=<contact>"
+      - "org.52north.context=<context>"
+  odc-data:
+    labels:
+      - "org.52north.contact=<contact>"
+      - "org.52north.context=<context>"

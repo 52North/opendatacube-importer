@@ -56,7 +56,9 @@ LABEL maintainer="Pontius, Martin <m.pontius@52north.org>" \
 
 WORKDIR ${HOME}
 
-COPY requirements.txt odc_importer ./
+COPY requirements.txt ./
+
+COPY ./odc_importer ./odc_importer
 
 RUN apt-get update \
     && apt-get install --assume-yes \

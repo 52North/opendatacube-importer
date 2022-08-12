@@ -62,22 +62,24 @@ Implement a new loader class that inherits from `loader.BasicLoader`. One exampl
 
 ## 4) Docker
 
+Pre-built Docker images are available at https://hub.docker.com/r/52north/opendatacube-importer.
 
-### 4.1) Folder structure
+### 4.1) Docker image folder structure
 
 Python files:
 ```
-/odc/odc_importer/*.py
+${BASE_FOLDER}/odc_importer/*.py
+/odc/odc_importer/*.py                (default)
 ```
 
 Base folder for data and metadata files:
 ```
-/odc/${DATA_FOLDER}
-/odc/DATA                         (default)
+${BASE_FOLDER}/${DATA_FOLDER}
+/odc/DATA                             (default)
 ```
 
 Subfolder for specific data source:
 ```
-/odc/${DATA_FOLDER}/<data source>
-/odc/DATA/anthroprotect           (example)
+${BASE_FOLDER}/${DATA_FOLDER}/<data source>
+/odc/DATA/anthroprotect               (example)
 ```
