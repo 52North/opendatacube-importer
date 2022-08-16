@@ -134,7 +134,7 @@ def add_datasets_to_odc(loader, dc):
     # ToDo: add option to overwrite yaml files?
 
     # Index datasets and save dataset yaml files
-    for idx_product, odc_product in enumrate(odc_product_names):
+    for idx_product, odc_product in enumerate(odc_product_names):
         logger.info("[Product {}/{}] Start indexing datasets for product '{}'".format(
             idx_product+1,
             len(odc_product_names),
