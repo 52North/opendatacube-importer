@@ -375,6 +375,8 @@ class AnthroprotectLoader(BasicLoader):
         :return: 'True' if anthroprotect folder was successfully created or already exists else 'False'
         """
 
+        # ToDo: do not store temporary download file in global data folder (-> /tmp)
+        # ToDo: compare sha256
         zip_file = os.path.join(global_data_folder, self.zip_file)
         out_folder = os.path.join(global_data_folder, self.folder)
 
@@ -392,13 +394,7 @@ class AnthroprotectLoader(BasicLoader):
             return True
         elif os.path.exists(zip_file):
             logger.info("Zip file '{}' already exists. Try to unzip.".format(zip_file))
-            try:
-                #  Unzip zip file (takes ~6 minutes)
-                unzip(zip_file, out_folder)
-                return True
-            except Exception as err:
-                logger.error("Could not unzip '{}': '{}'".format(zip_file, err))
-                return False
+            return self._unzip_anthroprotect(global_data_folder, zip_file)
 
         # Download zip file (takes ~> 1 hour)
         try:
@@ -408,15 +404,22 @@ class AnthroprotectLoader(BasicLoader):
                 with open(zip_file, 'wb') as f:
                     for chunk in r.iter_content(chunk_size=self.chunk_size):
                         f.write(chunk)
+            logger.info("Download of '{}' successful".format(zip_file))
         except Exception as err:
             logger.error("Could not download AnthroProtect dataset: '{}'".format(err))
             return False
 
-        # Unzip zip file (takes ~6 minutes)
+        logger.info("Try to unzip '{}'.".format(zip_file))
+        return self._unzip_anthroprotect(global_data_folder, zip_file)
+
+    def _unzip_anthroprotect(self, global_data_folder, zip_file):
         try:
-            logger.info("Try to unzip '{}'.".format(zip_file))
-            unzip(zip_file, out_folder)
+            #  Unzip zip file (takes ~6 minutes)
+            # anthroprotect.zip contains a folder 'anthroprotect'
+            # -> use global_data_folder as unzip target
+            unzip(zip_file, global_data_folder)
             os.remove(zip_file)
+            logger.info("Unzipping successful. Removed '{}'.".format(zip_file))
             return True
         except Exception as err:
             logger.error("Could not unzip '{}': '{}'".format(zip_file, err))
