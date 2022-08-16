@@ -162,7 +162,7 @@ def add_datasets_to_odc(loader, dc):
                 with open(dataset_filename, 'w') as f:
                     yaml.dump(dataset_yaml, f, default_flow_style=False, sort_keys=False)
                 resolver = datacube.index.hl.Doc2Dataset(index=dc.index, eo3=True)
-                dataset = resolver(dataset_yaml, dataset_filename.as_uri())
+                dataset = resolver(dataset_yaml, 'file://{}'.format(dataset_filename))
                 dc.index.datasets.add(dataset[0])
                 logger.info("[{}/{}] Added dataset with id '{}' to the index".format(
                     idx_dataset+1,
@@ -217,13 +217,16 @@ def create_dataset_yaml_eo3(odc_product_name, metadata_dict):
 
     # Band information
     measurements = {}
-    band_idx = 1
     for band in metadata_dict['bands']:
-        measurements[band] = {
-            'path': file_name,
-            'band': band_idx
-        }
-        band_idx = band_idx + 1
+        d = {'path': metadata_dict['bands'][band]['path']}
+        # https://datacube-core.readthedocs.io/en/latest/installation/dataset-documents.html#eo3-format
+        # integer, 1-based index into multi-band file
+        if 'band' in metadata_dict['bands'][band]:
+            d['band'] = metadata_dict['bands'][band]['band']
+        # str: netcdf variable to read
+        if 'layer' in metadata_dict['bands'][band]:
+            d['layer'] = metadata_dict['bands'][band]['layer']
+        measurements[band] = d
 
     # Define yaml file
     dataset_yaml = {

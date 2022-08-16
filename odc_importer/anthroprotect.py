@@ -42,7 +42,7 @@ from utils import verify_database_connection, ensure_odc_connection_and_database
 import requests
 import re
 
-
+# Band definitions for product metadata
 S2_BANDS = {
     'blue': {
         'aliases': ['BAND_2'],
@@ -219,21 +219,24 @@ class AnthroprotectLoader(BasicLoader):
         data_folder = os.path.join(global_data_folder, self.folder)
         product_dataset_map = {}
         # get file names including path for each odc product
+        # include only '.tif' files (there might be yaml files stored next to them)
         for subfolder in ['s2', 's2_scl', 'lcs']:
             files = os.listdir(os.path.join(data_folder, 'tiles', subfolder))
             for category in ['anthropo', 'wdpa-Ia', 'wdpa-Ib', 'wdpa-II']:
                 p = re.compile(category)
-                datasets_category = [os.path.join(data_folder, 'tiles', subfolder, element) for element in files if p.match(element)]
+                datasets_category = [os.path.join(data_folder, 'tiles', subfolder, element) for element in files if p.match(element) and element.endswith('.tif')]
                 odc_product = '{}_{}'.format(subfolder, category).replace('-', '_')
                 product_dataset_map.update({odc_product: datasets_category})
-        product_dataset_map.update({'s2_investigative': os.listdir(os.path.join(data_folder, 'investigative'))})
+        product_dataset_map.update({
+            's2_investigative': [os.path.join(data_folder, 'investigative', element) for element in os.listdir(os.path.join(data_folder, 'investigative')) if element.endswith('.tif')]
+        })
 
         # Check odc product names
         for odc_product in self.product_names:
             if odc_product not in product_dataset_map.keys():
                 logger.info("Product '{}' is missing in product-dataset-map!".format(odc_product))
 
-        # Check if file names in subfolders are identical (they should be)
+        # Check if tif file names in subfolders are identical (they should be)
         assert [os.path.basename(filename) for filename in product_dataset_map['s2_anthropo']] \
                == [os.path.basename(filename) for filename in product_dataset_map['s2_scl_anthropo']] \
                == [os.path.basename(filename) for filename in product_dataset_map['lcs_anthropo']]
@@ -282,20 +285,26 @@ class AnthroprotectLoader(BasicLoader):
         """
 
         if odc_product_name.startswith('s2_scl'):
-            bands = S2_SCL_BANDS
+            bands = dict.fromkeys(list(S2_SCL_BANDS.keys()))
             platform = 'Sentinel-2 scene classiﬁcation map'
             instrument = None
         elif odc_product_name.startswith('s2_'):
-            bands = S2_BANDS
+            bands = dict.fromkeys(list(S2_BANDS.keys()))
             platform = 'Sentinel-2 Level-2A'
             instrument = 'Multi-spectral instrument (MSI)'
         elif odc_product_name.startswith('lcs_'):
-            bands = LCS_BANDS
+            bands = dict.fromkeys(list(LCS_BANDS.keys()))
             platform = 'Copernicus CORINE Land Cover dataset, MODIS Land Cover Type 1, ' \
                        'Copernicus Global Land Service, ESA GlobCover'
             instrument = None
         else:
             logger.error("No band information found for product '{}'".format(odc_product_name))
+
+        for idx, band in enumerate(bands):
+            bands[band] = {
+                'path': dataset,
+                'band': idx + 1
+            }
 
         metadata = self._create_metadata_document(odc_product_name)
 
@@ -352,7 +361,7 @@ class AnthroprotectLoader(BasicLoader):
                 0,
                 1
             ],
-            'bands': list(bands.keys()),
+            'bands': bands,
             'platform': platform,
             'instrument': instrument,
             'datetime': '2020-08-01T12:00:00.00Z',
