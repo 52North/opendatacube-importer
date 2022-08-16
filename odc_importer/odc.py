@@ -213,7 +213,7 @@ def create_dataset_yaml_eo3(odc_product_name, metadata_dict):
     :return: `dict` of dataset metadata
     """
 
-    assert odc_product_name == metadata_dict['name']
+    assert odc_product_name == metadata_dict['product_name']
 
     # Band information
     measurements = {}
