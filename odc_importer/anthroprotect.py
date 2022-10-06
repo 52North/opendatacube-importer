@@ -250,7 +250,7 @@ class AnthroprotectLoader(BasicLoader):
 
         if odc_product_name.startswith('s2_scl'):
             bands = dict.fromkeys(list(S2_SCL_BANDS.keys()))
-            platform = 'Sentinel-2 scene classiﬁcation map'
+            platform = 'Sentinel-2 scene classification map'
             instrument = None
         elif odc_product_name.startswith('s2'):
             bands = dict.fromkeys(list(S2_BANDS.keys()))
