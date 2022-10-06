@@ -174,82 +174,45 @@ class AnthroprotectLoader(BasicLoader):
 
         product_names = os.getenv('ANTHROPROTECT_PRODUCT_NAMES')
         if product_names:
-            self.product_names = product_names.split(" ")
+            self.product_names = product_names.split(' ')
         else:
-            self.product_names = ['s2_anthropo', 's2_wdpa_Ia', 's2_wdpa_Ib', 's2_wdpa_II', 'lcs_anthropo',
-                                  'lcs_wdpa_Ia', 'lcs_wdpa_Ib', 'lcs_wdpa_II', 's2_scl_anthropo',
-                                  's2_scl_wdpa_Ia', 's2_scl_wdpa_Ib', 's2_scl_wdpa_II', 's2_investigative']
-
-    def _create_metadata_document(self, odc_product_name):
-
-        # keywords and links are needed for pygeoapi
-        keywords = ['AnthroProtect', 'Wilderness', 'Fennoscandia']
-
-        if odc_product_name.startswith('s2_scl'):
-            keywords = keywords + ['Sentinel-2 scene classiﬁcation map']
-        elif odc_product_name.startswith('s2_'):
-            keywords = keywords + ['Sentinel-2']
-        elif odc_product_name.startswith('lcs_'):
-            keywords = keywords + ['Land cover data']
-        else:
-            logger.error("No band information found for product '{}'".format(odc_product_name))
-
-        return {
-            'product': {
-                'name': odc_product_name
-            },
-            'keywords': keywords,
-            'links': [
-                {
-                    'type': 'text/html',
-                    'rel': 'canonical',
-                    'title': 'AnthroProtect dataset',
-                    'href': 'http://rs.ipb.uni-bonn.de/data/anthroprotect/',
-                    'hreflang': 'en-US'
-                }
-            ]
-        }
+            self.product_names = ['s2', 's2_scl', 'lcs']
 
     def create_product_dataset_map(self, global_data_folder):
         """
         Create a dictionary with product names as keys and lists of datasets (full path to file) as values
         :param global_data_folder:
-        :return: dict
         """
 
         data_folder = os.path.join(global_data_folder, self.folder)
         product_dataset_map = {}
         # get file names including path for each odc product
         # include only '.tif' files (there might be yaml files stored next to them)
-        for subfolder in ['s2', 's2_scl', 'lcs']:
+        for idx, subfolder in enumerate(['s2', 's2_scl', 'lcs']):
             files = os.listdir(os.path.join(data_folder, 'tiles', subfolder))
-            for category in ['anthropo', 'wdpa-Ia', 'wdpa-Ib', 'wdpa-II']:
-                p = re.compile(category)
-                datasets_category = [os.path.join(data_folder, 'tiles', subfolder, element) for element in files if p.match(element) and element.endswith('.tif')]
-                odc_product = '{}_{}'.format(subfolder, category).replace('-', '_')
-                product_dataset_map.update({odc_product: datasets_category})
-        product_dataset_map.update({
-            's2_investigative': [os.path.join(data_folder, 'investigative', element) for element in os.listdir(os.path.join(data_folder, 'investigative')) if element.endswith('.tif')]
-        })
+            datasets = [os.path.join(data_folder, 'tiles', subfolder, element)
+                        for element in files if element.endswith('.tif')]
+            product_dataset_map.update({self.product_names[idx]: datasets})
+
+        # Check if tif file names in subfolders 's2', 's2_scl' and 'lcs' are identical (they should be)
+        assert [os.path.basename(filename) for filename in product_dataset_map[self.product_names[0]]] \
+               == [os.path.basename(filename) for filename in product_dataset_map[self.product_names[1]]] \
+               == [os.path.basename(filename) for filename in product_dataset_map[self.product_names[2]]]
+
+        # Add files from 'investigative' folder to 's2' datasets
+        product_dataset_map.update(
+            {
+                self.product_names[0]: product_dataset_map.get(self.product_names[0]) +
+                                       [os.path.join(data_folder, 'investigative', element)
+                                        for element in os.listdir(os.path.join(data_folder, 'investigative'))
+                                        if element.endswith('.tif')]
+            }
+        )
 
         # Check odc product names
         for odc_product in self.product_names:
             if odc_product not in product_dataset_map.keys():
                 logger.info("Product '{}' is missing in product-dataset-map!".format(odc_product))
-
-        # Check if tif file names in subfolders are identical (they should be)
-        assert [os.path.basename(filename) for filename in product_dataset_map['s2_anthropo']] \
-               == [os.path.basename(filename) for filename in product_dataset_map['s2_scl_anthropo']] \
-               == [os.path.basename(filename) for filename in product_dataset_map['lcs_anthropo']]
-        assert [os.path.basename(filename) for filename in product_dataset_map['s2_wdpa_Ia']] \
-               == [os.path.basename(filename) for filename in product_dataset_map['s2_scl_wdpa_Ia']] \
-               == [os.path.basename(filename) for filename in product_dataset_map['lcs_wdpa_Ia']]
-        assert [os.path.basename(filename) for filename in product_dataset_map['s2_wdpa_Ib']] \
-               == [os.path.basename(filename) for filename in product_dataset_map['s2_scl_wdpa_Ib']] \
-               == [os.path.basename(filename) for filename in product_dataset_map['lcs_wdpa_Ib']]
-        assert [os.path.basename(filename) for filename in product_dataset_map['s2_wdpa_II']] \
-               == [os.path.basename(filename) for filename in product_dataset_map['s2_scl_wdpa_II']] \
-               == [os.path.basename(filename) for filename in product_dataset_map['lcs_wdpa_II']]
 
         self.product_dataset_map = product_dataset_map
 
@@ -262,9 +225,9 @@ class AnthroprotectLoader(BasicLoader):
 
         if odc_product_name.startswith('s2_scl'):
             bands = S2_SCL_BANDS
-        elif odc_product_name.startswith('s2_'):
+        elif odc_product_name.startswith('s2'):
             bands = S2_BANDS
-        elif odc_product_name.startswith('lcs_'):
+        elif odc_product_name.startswith('lcs'):
             bands = LCS_BANDS
         else:
             logger.error("No band information found for product '{}'".format(odc_product_name))
@@ -289,11 +252,11 @@ class AnthroprotectLoader(BasicLoader):
             bands = dict.fromkeys(list(S2_SCL_BANDS.keys()))
             platform = 'Sentinel-2 scene classiﬁcation map'
             instrument = None
-        elif odc_product_name.startswith('s2_'):
+        elif odc_product_name.startswith('s2'):
             bands = dict.fromkeys(list(S2_BANDS.keys()))
             platform = 'Sentinel-2 Level-2A'
             instrument = 'Multi-spectral instrument (MSI)'
-        elif odc_product_name.startswith('lcs_'):
+        elif odc_product_name.startswith('lcs'):
             bands = dict.fromkeys(list(LCS_BANDS.keys()))
             platform = 'Copernicus CORINE Land Cover dataset, MODIS Land Cover Type 1, ' \
                        'Copernicus Global Land Service, ESA GlobCover'
@@ -380,7 +343,6 @@ class AnthroprotectLoader(BasicLoader):
     def download(self, global_data_folder):
         """
         Download anthroprotect dataset in chunks with given chunk size. Takes ~ >1 hour.
-
         :param global_data_folder:
         :return: 'True' if anthroprotect folder was successfully created or already exists else 'False'
         """
@@ -431,6 +393,36 @@ class AnthroprotectLoader(BasicLoader):
                          .format(zip_file))
             os.remove(zip_file)
             return False
+
+    def _create_metadata_document(self, odc_product_name):
+
+        # keywords and links are needed for pygeoapi
+        keywords = ['AnthroProtect', 'Wilderness', 'Fennoscandia']
+
+        if odc_product_name.startswith('s2_scl'):
+            keywords = keywords + ['Sentinel-2 scene classiﬁcation map']
+        elif odc_product_name.startswith('s2'):
+            keywords = keywords + ['Sentinel-2']
+        elif odc_product_name.startswith('lcs'):
+            keywords = keywords + ['Land cover data']
+        else:
+            logger.error("No band information found for product '{}'".format(odc_product_name))
+
+        return {
+            'product': {
+                'name': odc_product_name
+            },
+            'keywords': keywords,
+            'links': [
+                {
+                    'type': 'text/html',
+                    'rel': 'canonical',
+                    'title': 'AnthroProtect dataset',
+                    'href': 'http://rs.ipb.uni-bonn.de/data/anthroprotect/',
+                    'hreflang': 'en-US'
+                }
+            ]
+        }
 
     def _unzip_anthroprotect(self, global_data_folder, zip_file):
         try:
