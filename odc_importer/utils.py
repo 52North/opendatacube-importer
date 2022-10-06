@@ -25,6 +25,7 @@
 # Public License for more details.
 #
 from contextlib import closing
+import hashlib
 import logging
 import os
 import psycopg2
@@ -139,3 +140,17 @@ def unzip(zip_file, out_folder):
 
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
         zip_ref.extractall(out_folder)
+
+
+def calc_sha256(filename):
+    """
+    Calculate sha256 hash for a given file
+    :param filename:
+    :return: sha256 hash as string
+    """
+
+    sha256_hash = hashlib.sha256()
+    with open(filename, 'rb') as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()

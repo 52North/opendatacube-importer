@@ -37,7 +37,7 @@ import datacube.model
 from pyproj import CRS
 import rasterio
 from loader import BasicLoader
-from utils import verify_database_connection, ensure_odc_connection_and_database_initialization, unzip
+from utils import calc_sha256, ensure_odc_connection_and_database_initialization, unzip, verify_database_connection
 
 import requests
 import re
@@ -170,6 +170,7 @@ class AnthroprotectLoader(BasicLoader):
         self.folder = os.getenv('ANTHROPROTECT_FOLDER', 'anthroprotect')
         self.chunk_size = 8192  # in bytes
         self.force_download = os.getenv('ANTHROPROTECT_FORCE_DOWNLOAD', False)
+        self.zip_sha256_hash = os.getenv('ANTHROPROTECT_ZIP_SHA256', '88ab511c2c89b64cd29d5f0d03174b450af3dd66a48423bc7f212f4391206f0d')
 
         product_names = os.getenv('ANTHROPROTECT_PRODUCT_NAMES')
         if product_names:
@@ -385,7 +386,6 @@ class AnthroprotectLoader(BasicLoader):
         """
 
         # ToDo: do not store temporary download file in global data folder (-> /tmp)
-        # ToDo: compare sha256
         zip_file = os.path.join(global_data_folder, self.zip_file)
         out_folder = os.path.join(global_data_folder, self.folder)
 
@@ -403,6 +403,8 @@ class AnthroprotectLoader(BasicLoader):
             return True
         elif os.path.exists(zip_file):
             logger.info("Zip file '{}' already exists. Try to unzip.".format(zip_file))
+            # Check hash of zip file
+            self._check_sha256(zip_file)
             return self._unzip_anthroprotect(global_data_folder, zip_file)
 
         # Download zip file (takes ~> 1 hour)
@@ -414,12 +416,21 @@ class AnthroprotectLoader(BasicLoader):
                     for chunk in r.iter_content(chunk_size=self.chunk_size):
                         f.write(chunk)
             logger.info("Download of '{}' successful".format(zip_file))
+            # Check hash of zip file
+            self._check_sha256(zip_file)
         except Exception as err:
             logger.error("Could not download AnthroProtect dataset: '{}'".format(err))
             return False
 
         logger.info("Try to unzip '{}'.".format(zip_file))
         return self._unzip_anthroprotect(global_data_folder, zip_file)
+
+    def _check_sha256(self, zip_file):
+        if self.zip_sha256_hash != calc_sha256(zip_file):
+            logger.error("SHA256 hash of the downloaded zip file '{}' is wrong. Delete the file and abort."
+                         .format(zip_file))
+            os.remove(zip_file)
+            return False
 
     def _unzip_anthroprotect(self, global_data_folder, zip_file):
         try:
