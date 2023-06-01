@@ -1,3 +1,6 @@
 datacube==1.8.7
 requests
 sqlalchemy<2.0
+numpy
+rioxarray
+

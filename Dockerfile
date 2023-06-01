@@ -43,7 +43,7 @@ ENV MAX_RETRIES=15
 ENV SLEEP=2
 ENV PYTHONUNBUFFERED=1
 ENV BASE_FOLDER=/odc
-ENV DATA_FOLDER=DATA
+ENV DATA_FOLDER=data
 ARG HOME=${BASE_FOLDER}
 
 LABEL maintainer="Pontius, Martin <m.pontius@52north.org>" \
@@ -57,8 +57,6 @@ LABEL maintainer="Pontius, Martin <m.pontius@52north.org>" \
 WORKDIR ${HOME}
 
 COPY requirements.txt ./
-
-COPY ./odc_importer ./odc_importer
 
 RUN apt-get update \
     && apt-get install --assume-yes \
@@ -76,6 +74,9 @@ RUN apt-get update \
     && apt-get autoremove --assume-yes \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir --parents --verbose ./$DATA_FOLDER
+
+
+COPY ./odc_importer ./odc_importer
 
 CMD python ./odc_importer/odc.py --host="$DB_HOST" \
                                  --user="$DB_USER" \

@@ -48,14 +48,16 @@ if os.path.exists(logging_config_file):
                   .format(logging_config_file))
             logging.basicConfig(level=level)
 else:
-    print('Logging file configuration does not exist: "{}". Using defaults.'.format(logging_config_file))
+    print('Logging file configuration does not exist: "{}". Using defaults.'.format(
+        logging_config_file))
     logging.basicConfig(level=level)
 
 logger = logging.getLogger(__name__)
 
 
 def parse_parameter() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Add data from defined data sources to Open Data Cube index.')
+    parser = argparse.ArgumentParser(
+        description='Add data from defined data sources to Open Data Cube index.')
     parser.add_argument('-s', '--host',
                         help="Database host name. Defaults to 'localhost'.",
                         required=False, type=str, default='localhost')
@@ -142,7 +144,8 @@ def add_datasets_to_odc(loader, dc):
         # 'odc_dataset' can be a file or a folder (e.g. when bands are in separate files like for Landsat 8)
         for idx_dataset, odc_dataset in enumerate(odc_product_dataset_map[odc_product]):
             if not os.path.exists(odc_dataset):
-                logger.info("Dataset '{}' does not exist! Continue with next.".format(odc_dataset))
+                logger.info(
+                    "Dataset '{}' does not exist! Continue with next.".format(odc_dataset))
                 continue
             dataset_id = str(uuid.uuid5(uuid.NAMESPACE_URL, odc_dataset))
             if not dc.index.datasets.get(id_=dataset_id) is None:
@@ -151,18 +154,26 @@ def add_datasets_to_odc(loader, dc):
                     len(odc_product_dataset_map[odc_product]),
                     dataset_id))
             else:
-                dataset_metadata = loader.create_dataset_metadata_eo3(odc_product, odc_dataset)
-                dataset_yaml = create_dataset_yaml_eo3(odc_product, dataset_metadata)
+                dataset_metadata = loader.create_dataset_metadata_eo3(
+                    odc_product, odc_dataset)
+                dataset_yaml = create_dataset_yaml_eo3(
+                    odc_product, dataset_metadata)
                 # Note: be careful with choosing path and name of dataset yaml file because file or folder
                 # names might exist more than once (this is the case, e.g., for the AnthroProtect dataset)
                 # Put dataset yaml file next to the file/folder
-                file_or_folder_path, file_or_folder_name = os.path.split(os.path.normpath(odc_dataset))
+                file_or_folder_path, file_or_folder_name = os.path.split(
+                    os.path.normpath(odc_dataset))
                 dataset_filename = os.path.join(file_or_folder_path,
                                                 '{}.odc-metadata.yaml'.format(file_or_folder_name))
                 with open(dataset_filename, 'w') as f:
-                    yaml.dump(dataset_yaml, f, default_flow_style=False, sort_keys=False)
-                resolver = datacube.index.hl.Doc2Dataset(index=dc.index, eo3=True)
-                dataset = resolver(dataset_yaml, 'file://{}'.format(dataset_filename))
+                    yaml.dump(dataset_yaml, f,
+                              default_flow_style=False, sort_keys=False)
+                resolver = datacube.index.hl.Doc2Dataset(
+                    index=dc.index, eo3=True)
+                dataset = resolver(
+                    dataset_yaml, 'file://{}'.format(dataset_filename))
+                logger.info(f'{dataset} and {dataset[0]}')
+                # logger.info(dataset[0])
                 dc.index.datasets.add(dataset[0])
                 logger.info("[{}/{}] Added dataset with id '{}' to the index".format(
                     idx_dataset+1,
@@ -189,17 +200,21 @@ def add_products_to_odc(loader, global_data_folder, dc):
     for odc_product in odc_product_names:
         if odc_product not in dc.list_products()['name'].values:
             product_metadata = loader.create_product_metadata_eo3(odc_product)
-            product_yaml = create_product_yaml_eo3(odc_product, product_metadata)
+            product_yaml = create_product_yaml_eo3(
+                odc_product, product_metadata)
             product_filename = os.path.join(global_data_folder,
                                             loader.get_folder(),
                                             '{}.odc-product.yaml'.format(odc_product))
             if not os.path.exists(product_filename):
                 with open(product_filename, 'w') as f:
-                    yaml.dump(product_yaml, f, default_flow_style=False, sort_keys=False)
+                    yaml.dump(product_yaml, f,
+                              default_flow_style=False, sort_keys=False)
             dc.index.products.add_document(product_yaml)
-            logger.info("Added product family '{}' to the index".format(odc_product))
+            logger.info(
+                "Added product family '{}' to the index".format(odc_product))
         else:
-            logger.info("Product family '{}' already in index".format(odc_product))
+            logger.info(
+                "Product family '{}' already in index".format(odc_product))
 
     return None
 
@@ -276,14 +291,14 @@ def create_product_yaml_eo3(odc_product_name, metadata_dict):
     assert odc_product_name == metadata_dict['name'] == metadata_dict['metadata']['product']['name']
 
     measurements = []
-    for band in metadata_dict['bands']:
+    for measurement in metadata_dict['measurements']:
         measurements.append(
             {
-                'name': band,
-                'dtype': metadata_dict['bands'][band]['dtype'],
-                'units': metadata_dict['bands'][band]['unit'],
-                'nodata': metadata_dict['bands'][band]['nodata'],
-                'aliases': metadata_dict['bands'][band]['aliases'],
+                'name': measurement,
+                'dtype': metadata_dict['measurements'][measurement]['dtype'],
+                'units': metadata_dict['measurements'][measurement]['units'],
+                'nodata': metadata_dict['measurements'][measurement]['nodata'],
+                'aliases': metadata_dict['measurements'][measurement]['aliases'],
             }
         )
 
@@ -304,7 +319,8 @@ def main():
     db_conn_ok = False
     while times_slept < args.max_retries:
         # check "connection" to odc (?) or later
-        logger.info("[{}/{}] Check database connection".format(str(times_slept + 1), str(args.max_retries)))
+        logger.info(
+            "[{}/{}] Check database connection".format(str(times_slept + 1), str(args.max_retries)))
         if verify_database_connection(args.db, args.host, args.port, args.user, args.password, args.no_ping):
             db_conn_ok = True
             break
@@ -339,7 +355,8 @@ def main():
         # Download data from data source
         download_success = loader.download(global_data_folder)
         if not download_success:
-            logger.warning("Could not download data from data source '{}'.".format(datasource[0]))
+            logger.warning(
+                "Could not download data from data source '{}'.".format(datasource[0]))
         else:
             if len(loader.product_dataset_map) == 0:
                 loader.create_product_dataset_map(global_data_folder)

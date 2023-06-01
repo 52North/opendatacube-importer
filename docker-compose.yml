@@ -11,27 +11,48 @@ services:
     - PGDATA=/var/lib/postgresql/data/pgdata
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   opendatacube-importer:
 #    image: 52north/opendatacube-importer:latest
     build:
       context: .
     environment:
-      - ANTHROPROTECT_ENABLED=True
+      - ANTHROPROTECT_ENABLED=False
     env_file:
       - docker.env
     volumes:
-      - odc-data:/odc/DATA
+      - odc-data-waves:/odc/data/waves
+      - odc-data-physics:/odc/data/physics
+      - odc-data-currents:/odc/data/currents
+      - odc-data-weather:/odc/data/weather
+
     depends_on:
       - database
 
 volumes:
   odc-database-data:
+    name: odc-database-data
     labels:
       - "org.52north.contact=<contact>"
       - "org.52north.context=<context>"
-  odc-data:
-    labels:
-      - "org.52north.contact=<contact>"
-      - "org.52north.context=<context>"
+  odc-data-waves:
+    external: true
+    # labels:
+    #   - "org.52north.contact=<contact>"
+    #   - "org.52north.context=<context>"
+  odc-data-physics:
+    external: true
+    # labels:
+    #   - "org.52north.contact=<contact>"
+    #   - "org.52north.context=<context>"
+  odc-data-currents:
+    external: true
+    # labels:
+    #   - "org.52north.contact=<contact>"
+    #   - "org.52north.context=<context>"
+  odc-data-weather:
+    external: true
+    # labels:
+    #   - "org.52north.contact=<contact>"
+    #   - "org.52north.context=<context>"
