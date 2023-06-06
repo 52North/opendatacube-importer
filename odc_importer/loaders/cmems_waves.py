@@ -65,12 +65,13 @@ waves_measurements = {
         'nodata': -999,
         'units': 'degree',
     },
-    'VPED': {
-        'aliases': ['sea_surface_wave_from_direction_at_variance_spectral_density_maximum'],
-        'dtype': 'float32',
-        'nodata': -999,
-        'units': 'degree',
-    }}
+    # 'VPED': {
+    #     'aliases': ['sea_surface_wave_from_direction_at_variance_spectral_density_maximum'],
+    #     'dtype': 'float32',
+    #     'nodata': -999,
+    #     'units': 'degree',
+    # }
+    }
 
 logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
 level = logging.DEBUG

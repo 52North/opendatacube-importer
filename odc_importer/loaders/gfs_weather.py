@@ -49,28 +49,34 @@ import re
 # Band definitions for product metadata
 gfs_measurements = {
     'Temperature_surface': {
-        'aliases': ['BAND_2'],
+        'aliases': ['Temperature Surface'],
         'dtype': 'float64',
         'nodata': 0.0,
-        'units': '1',
+        'units': 'K',
     },
     'Pressure_reduced_to_MSL_msl': {
-        'aliases': ['BAND_3'],
+        'aliases': ['Pressure reduced to MSL'],
         'dtype': 'float64',
         'nodata': 0.0,
         'units': '1'
     },
     'Wind_speed_gust_surface': {
-        'aliases': ['BAND_4'],
+        'aliases': ['Wind speed gust surface'],
         'dtype': 'float64',
         'nodata': 0.0,
         'units': '1',
     },
-    'v-component_of_wind_height_above_ground': {
-        'aliases': ['BAND_5'],
+    'u_component_of_wind_height_above_ground': {
+        'aliases': ['u_wind_height_above_ground'],
         'dtype': 'float64',
         'nodata': 0.0,
-        'units': '1',
+        'units': 'm/s',
+    },
+    'v_component_of_wind_height_above_ground': {
+        'aliases': ['v_wind_height_above_ground'],
+        'dtype': 'float64',
+        'nodata': 0.0,
+        'units': 'm/s',
     },
     # 'u-component_of_wind_sigma': {
     #     'aliases': ['BAND_6'],
@@ -205,7 +211,7 @@ class GfsWeatherLoader(BasicLoader):
         metadata = self._create_metadata_document(odc_product_name)
 
         # Extract geo-information from file
-        # Read the the dataset with decode_coords='all' to get crs
+        # Read the dataset with decode_coords='all' to get crs
         df_nc = xr.open(dataset, decode_coords='all')
 
         # Extract polygon geometry from the dataset using numpy array

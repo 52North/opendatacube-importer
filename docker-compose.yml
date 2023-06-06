@@ -1,17 +1,17 @@
 version: '3'
 services:
-  database:
-    image: postgres:13-buster
-    volumes:
-     - odc-database-data:/var/lib/postgresql/data
-    environment:
-    - POSTGRES_USER=opendatacube
-    - POSTGRES_PASSWORD=opendatacube
-    - POSTGRES_DB=opendatacube
-    - PGDATA=/var/lib/postgresql/data/pgdata
-    restart: unless-stopped
-    ports:
-      - "5433:5432"
+  # database:
+  #   image: postgres:13-buster
+  #   volumes:
+  #    - 52n-gn-dev-dbdata:/var/lib/postgresql/data/
+  #   environment:
+  #   - POSTGRES_USER=geonode-postgres-admin
+  #   - POSTGRES_PASSWORD=geonode-postgres-admin-passwort
+  #   - POSTGRES_DB=geoserver
+  #   - PGDATA=/var/lib/postgresql/data/pgdata
+  #   restart: unless-stopped
+  #   # ports:
+  #   #   - "5433:5432"
 
   opendatacube-importer:
 #    image: 52north/opendatacube-importer:latest
@@ -26,16 +26,22 @@ services:
       - odc-data-physics:/odc/data/physics
       - odc-data-currents:/odc/data/currents
       - odc-data-weather:/odc/data/weather
+    networks:
+      - 52n-gn-dev_default
 
-    depends_on:
-      - database
+    # depends_on:
+    #   - db
 
+networks:
+  52n-gn-dev_default:
+    external: True
 volumes:
-  odc-database-data:
-    name: odc-database-data
-    labels:
-      - "org.52north.contact=<contact>"
-      - "org.52north.context=<context>"
+  # 52n-gn-dev-dbdata:
+  #   external: true
+    # name: odc-database-data
+    # labels:
+    #   - "org.52north.contact=<contact>"
+    #   - "org.52north.context=<context>"
   odc-data-waves:
     external: true
     # labels:
