@@ -10,9 +10,13 @@ datacube product add metadata/anthroprotect.odc-product.yaml
 datacube dataset add metadata/anthroprotect.odc-metadata.yaml
 ```
 
-## 2) Datasets
+## 2) Data sources
 
 ### 2.1) AnthroProtect
+
+<details>
+<summary>Details</summary>
+
 
 #### 2.1.1) Folder structure
 ```
@@ -52,9 +56,44 @@ Instead of the default product names custom names can be defined by setting the 
 
  The names MUST be separated with a space, MUST start with 's2', 's2_scl', 'lcs' and MUST be in the correct order. The first name is used for Sentinel-2 scenes, the second for Sentinel-2 scene classiﬁcation map scenes and the third for land cover scenes.
 
+</details>
+
 ### 2.2) Landsat 8
 
+<details>
+<summary>Details</summary>
 TBD (cf. Testbed-17)
+</details>
+
+### 2.3) Copernicus Marine Environment Monitoring System (CMEMS)
+
+<details>
+<summary>Details</summary>
+The importer contains loaders to import data from CMEMS. Currently, configuration for the following products is provided:
+
+- https://data.marine.copernicus.eu/product/GLOBAL_ANALYSISFORECAST_PHY_001_024/description
+- https://data.marine.copernicus.eu/product/GLOBAL_ANALYSISFORECAST_WAV_001_027/description
+
+This includes datasets for ocean currents, physics and waves data. They can be enabled independently using the following environment variables:
+- CMEMS_CURRENTS_ENABLED=<True|False>
+- CMEMS_PHYSICS_ENABLED=<True|False>
+- CMEMS_WAVES_ENABLED=<True|False>
+
+Folders and ODC product names can be configured using
+- CMEMS_WAVES_FOLDER and CMEMS_WAVES_PRODUCT_NAME
+- CMEMS_CURRENTS_FOLDER and CMEMS_CURRENTS_PRODUCT_NAME
+- CMEMS_PHYSICS_FOLDER and CMEMS_PHYSICS_PRODUCT_NAME
+</details>
+
+### 2.4) Global Forecast System (GFS)
+
+<details>
+<summary>Details</summary>
+The importer contains a loader to import weather forecasts from GFS (https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast)
+
+The data source can be enabled using the environment variable GFS_ENABLED=<True|False>. Folder and ODC product name can be changed using the environment variables GFS_FOLDER and GFS_PRODUCT_NAME.
+</details>
+
 
 ## 3) Add new data source
 

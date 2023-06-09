@@ -1,17 +1,17 @@
 version: '3'
 services:
-  # database:
-  #   image: postgres:13-buster
-  #   volumes:
-  #    - 52n-gn-dev-dbdata:/var/lib/postgresql/data/
-  #   environment:
-  #   - POSTGRES_USER=geonode-postgres-admin
-  #   - POSTGRES_PASSWORD=geonode-postgres-admin-passwort
-  #   - POSTGRES_DB=geoserver
-  #   - PGDATA=/var/lib/postgresql/data/pgdata
-  #   restart: unless-stopped
-  #   # ports:
-  #   #   - "5433:5432"
+  database:
+    image: postgres:13-buster
+    volumes:
+     - odc-database-data:/var/lib/postgresql/data
+    environment:
+    - POSTGRES_USER=opendatacube
+    - POSTGRES_PASSWORD=opendatacube
+    - POSTGRES_DB=opendatacube
+    - PGDATA=/var/lib/postgresql/data/pgdata
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
 
   opendatacube-importer:
 #    image: 52north/opendatacube-importer:latest
@@ -22,43 +22,16 @@ services:
     env_file:
       - docker.env
     volumes:
-      - odc-data-waves:/odc/data/waves
-      - odc-data-physics:/odc/data/physics
-      - odc-data-currents:/odc/data/currents
-      - odc-data-weather:/odc/data/weather
-    networks:
-      - 52n-gn-dev_default
+      - odc-data:/odc/DATA
+    depends_on:
+      - database
 
-    # depends_on:
-    #   - db
-
-networks:
-  52n-gn-dev_default:
-    external: True
 volumes:
-  # 52n-gn-dev-dbdata:
-  #   external: true
-    # name: odc-database-data
-    # labels:
-    #   - "org.52north.contact=<contact>"
-    #   - "org.52north.context=<context>"
-  odc-data-waves:
-    external: true
-    # labels:
-    #   - "org.52north.contact=<contact>"
-    #   - "org.52north.context=<context>"
-  odc-data-physics:
-    external: true
-    # labels:
-    #   - "org.52north.contact=<contact>"
-    #   - "org.52north.context=<context>"
-  odc-data-currents:
-    external: true
-    # labels:
-    #   - "org.52north.contact=<contact>"
-    #   - "org.52north.context=<context>"
-  odc-data-weather:
-    external: true
-    # labels:
-    #   - "org.52north.contact=<contact>"
-    #   - "org.52north.context=<context>"
+  odc-database-data:
+    labels:
+      - "org.52north.contact=<contact>"
+      - "org.52north.context=<context>"
+  odc-data:
+    labels:
+      - "org.52north.contact=<contact>"
+      - "org.52north.context=<context>"

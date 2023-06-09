@@ -1,9 +1,35 @@
+# Copyright (C) 2022-2023 52°North Spatial Information Research GmbH
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as published
+# by the Free Software Foundation.
+#
+# If the program is linked with libraries which are licensed under one of
+# the following licenses, the combination of the program with the linked
+# library is not considered a "derivative work" of the program:
+#
+#     - Apache License, version 2.0
+#     - Apache Software License, version 1.0
+#     - GNU Lesser General Public License, version 3
+#     - Mozilla Public License, versions 1.0, 1.1 and 2.0
+#     - Common Development and Distribution License (CDDL), version 1.0
+#
+# Therefore the distribution of the program linked with libraries licensed
+# under the aforementioned licenses, is permitted by the copyright holders
+# if the distribution is compliant with both the GNU General Public
+# License version 2 and the aforementioned licenses.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+# Public License for more details.
+#
 import os
-from anthroprotect import AnthroprotectLoader
-from loaders.cmems_waves import CmemsWavesLoader
-from loaders.cmems_physics import CmemsPhysicsLoader
-from loaders.cmems_currents import CmemsCurrentLoader
-from loaders.gfs_weather import GfsWeatherLoader
+
+from loaders.anthroprotect import AnthroprotectLoader
+from loaders.cmems import CmemsWavesLoader, CmemsCurrentsLoader, CmemsPhysicsLoader
+from loaders.gfs import GfsLoader
+
 #
 # Open Data Cube configuration
 #
@@ -26,31 +52,34 @@ DATA_FOLDER = os.getenv('DATA_FOLDER', 'data')
 ANTHROPROTECT_ENABLED = os.getenv('ANTHROPROTECT_ENABLED', False)
 
 #
+# CMEMS data source (https://data.marine.copernicus.eu/products)
+#
+CMEMS_CURRENTS_ENABLED = os.getenv('CMEMS_CURRENTS_ENABLED', False)
+CMEMS_PHYSICS_ENABLED = os.getenv('CMEMS_PHYSICS_ENABLED', False)
+CMEMS_WAVES_ENABLED = os.getenv('CMEMS_WAVES_ENABLED', False)
+
+#
+# GFS data source (https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast)
+#
+GFS_ENABLED = os.getenv('GFS_ENABLED', False)
+
+#
 # Data sources to be added to Open Data Cube
 # tuples of data source descriptor and loader class
 #
 DATASOURCES = []
+
 if ANTHROPROTECT_ENABLED:
     DATASOURCES.append(('anthroprotect', AnthroprotectLoader))
-    
-# Check if CMEMS Waves data source is enabled
-CMEMS_WAVES_ENABLED = os.getenv('CMEMS_WAVES_ENABLED', True)
-if CMEMS_WAVES_ENABLED:
-    DATASOURCES.append(('cmems_waves', CmemsWavesLoader))
 
-# Check if CMEMS Physics data source is enabled
-CMEMS_PHYSICS_ENABLED = os.getenv('CMEMS_PHYSICS_ENABLED', True)
+if CMEMS_CURRENTS_ENABLED:
+    DATASOURCES.append(('cmems_currents', CmemsCurrentsLoader))
+
 if CMEMS_PHYSICS_ENABLED:
     DATASOURCES.append(('cmems_physics', CmemsPhysicsLoader))
 
-# Check if CMEMS Current data source is enabled
-CMEMS_CURRENT_ENABLED = os.getenv('CMEMS_CURRENT_ENABLED', True)
-if CMEMS_CURRENT_ENABLED:
-    DATASOURCES.append(('cmems_current', CmemsCurrentLoader))
+if CMEMS_WAVES_ENABLED:
+    DATASOURCES.append(('cmems_waves', CmemsWavesLoader))
 
-# Check if GFS Weather data source is enabled
-GFS_WEATHER_ENABLED = os.getenv('GFS_WEATHER_ENABLED', True)
-if GFS_WEATHER_ENABLED:
-    DATASOURCES.append(('gfs_weather', GfsWeatherLoader))
-    
-print(DATASOURCES)
+if GFS_ENABLED:
+    DATASOURCES.append(('gfs', GfsLoader))

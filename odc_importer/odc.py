@@ -25,12 +25,14 @@
 # Public License for more details.
 #
 import argparse
-import datacube
 import logging
 import os
 import time
 import uuid
+
+import datacube
 import yaml
+from datacube.index.hl import Doc2Dataset
 
 from config import DATACUBE_CONF, BASE_FOLDER, DATA_FOLDER, DATASOURCES
 from utils import verify_database_connection, ensure_odc_connection_and_database_initialization, check_global_data_folder
@@ -154,31 +156,32 @@ def add_datasets_to_odc(loader, dc):
                     len(odc_product_dataset_map[odc_product]),
                     dataset_id))
             else:
-                dataset_metadata = loader.create_dataset_metadata_eo3(
-                    odc_product, odc_dataset)
-                dataset_yaml = create_dataset_yaml_eo3(
-                    odc_product, dataset_metadata)
-                # Note: be careful with choosing path and name of dataset yaml file because file or folder
-                # names might exist more than once (this is the case, e.g., for the AnthroProtect dataset)
-                # Put dataset yaml file next to the file/folder
-                file_or_folder_path, file_or_folder_name = os.path.split(
-                    os.path.normpath(odc_dataset))
-                dataset_filename = os.path.join(file_or_folder_path,
-                                                '{}.odc-metadata.yaml'.format(file_or_folder_name))
-                with open(dataset_filename, 'w') as f:
-                    yaml.dump(dataset_yaml, f,
-                              default_flow_style=False, sort_keys=False)
-                resolver = datacube.index.hl.Doc2Dataset(
-                    index=dc.index, eo3=True)
-                dataset = resolver(
-                    dataset_yaml, 'file://{}'.format(dataset_filename))
-                logger.info(f'{dataset} and {dataset[0]}')
-                # logger.info(dataset[0])
-                dc.index.datasets.add(dataset[0])
-                logger.info("[{}/{}] Added dataset with id '{}' to the index".format(
-                    idx_dataset+1,
-                    len(odc_product_dataset_map[odc_product]),
-                    dataset_id))
+                try:
+                    dataset_metadata = loader.create_dataset_metadata_eo3(
+                        odc_product, odc_dataset)
+                    dataset_yaml = create_dataset_yaml_eo3(
+                        odc_product, dataset_metadata)
+                    # Note: be careful with choosing path and name of dataset yaml file because file or folder
+                    # names might exist more than once (this is the case, e.g., for the AnthroProtect dataset)
+                    # Put dataset yaml file next to the file/folder
+                    file_or_folder_path, file_or_folder_name = os.path.split(
+                        os.path.normpath(odc_dataset))
+                    dataset_filename = os.path.join(file_or_folder_path,
+                                                    '{}.odc-metadata.yaml'.format(file_or_folder_name))
+                    with open(dataset_filename, 'w') as f:
+                        yaml.dump(dataset_yaml, f, default_flow_style=False, sort_keys=False)
+                    resolver = Doc2Dataset(index=dc.index, eo3=True)
+                    dataset = resolver(dataset_yaml, 'file://{}'.format(dataset_filename))
+                    logger.info(f'{dataset} and {dataset[0]}')
+                    # logger.info(dataset[0])
+                    dc.index.datasets.add(dataset[0])
+                    logger.info("[{}/{}] Added dataset with id '{}' to the index".format(
+                        idx_dataset+1,
+                        len(odc_product_dataset_map[odc_product]),
+                        dataset_id))
+                except Exception as err:
+                    logger.warning(f"Could not add dataset '{odc_dataset}' to the ODC index: {err}")
+                    continue
     return None
 
 

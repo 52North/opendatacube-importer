@@ -24,23 +24,18 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 # Public License for more details.
 #
-import os
-import uuid
-import time
-import argparse
 import logging.config
+import os
 import shutil
-import yaml
-import datacube
-import datacube.index.hl
-import datacube.model
-from pyproj import CRS
-import rasterio
-from loader import BasicLoader
-from utils import calc_sha256, ensure_odc_connection_and_database_initialization, unzip, verify_database_connection
+import uuid
 
+import rasterio
 import requests
-import re
+import yaml
+# from pyproj import CRS
+
+from .base import BaseLoader
+from utils import calc_sha256, ensure_odc_connection_and_database_initialization, unzip, verify_database_connection
 
 # Band definitions for product metadata
 S2_BANDS = {
@@ -142,7 +137,7 @@ S2_SCL_BANDS = {
     }
 }
 
-logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
+logging_config_file = os.path.join(os.path.dirname(__file__), '../logging.yaml')
 level = logging.DEBUG
 if os.path.exists(logging_config_file):
     with open(logging_config_file, 'rt') as file:
@@ -161,7 +156,7 @@ else:
 logger = logging.getLogger(__name__)
 
 
-class AnthroprotectLoader(BasicLoader):
+class AnthroprotectLoader(BaseLoader):
 
     def __init__(self):
         super().__init__()
