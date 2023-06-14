@@ -33,6 +33,10 @@ from loaders.gfs import GfsLoader
 #
 # Open Data Cube configuration
 #
+# The ODC configuration file is created from the environment variables DB_HOST, DB_PORT, DB_USER, DB_PASSWORD and DB
+# and saved to the file specified by DATACUBE_CONF.
+# Reference: https://datacube-core.readthedocs.io/en/latest/installation/database/setup.html#create-configuration-file
+#
 DATACUBE_CONF = os.getenv('DATACUBE_CONF', 'datacube.conf')
 
 #

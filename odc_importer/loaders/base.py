@@ -35,7 +35,8 @@ class BaseLoader:
         """
         :param odc_product_name: str, product name
         :param dataset: str, can be a file or a folder (e.g. when bands are in separate files like for Landsat 8)
-        :return:
+        :return: dict
+            the dictionary needs to contain several key-value pairs, see odc.create_dataset_yaml_eo3 for details
         """
         raise NotImplementedError("Implement this method in subclass!")
 
@@ -46,6 +47,11 @@ class BaseLoader:
         pass
 
     def create_product_metadata_eo3(self, odc_product_name):
+        """
+        :param odc_product_name: str, product name
+        :return: dict
+            the dictionary needs to contain several key-value pairs, see odc.create_product_yaml_eo3 for details
+        """
         raise NotImplementedError("Implement this method in subclass!")
 
     def download(self, global_data_folder):

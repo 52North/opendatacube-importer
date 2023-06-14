@@ -1,4 +1,4 @@
-# Copyright (C) 2022 52°North Spatial Information Research GmbH
+# Copyright (C) 2022-2023 52°North Spatial Information Research GmbH
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as published
@@ -24,6 +24,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 # Public License for more details.
 #
+
+# Note: all key-value pairs which are under the 'metadata' key in the product.yaml also have to be in the dataset.yaml
+#       (here as top-level elements). If that’s not the case there will be an error thrown while indexing:
+#         BadMatch('Error loading lineage dataset: Dataset metadata did not match product signature.
+#       Additional elements in the dataset.yaml are possible (no error is thrown), however, they will not appear
+#       in the database after indexing.
+
 import argparse
 import logging
 import os
@@ -34,8 +41,9 @@ import datacube
 import yaml
 from datacube.index.hl import Doc2Dataset
 
-from config import DATACUBE_CONF, BASE_FOLDER, DATA_FOLDER, DATASOURCES
+from config import BASE_FOLDER, DATACUBE_CONF, DATA_FOLDER, DATASOURCES
 from utils import verify_database_connection, ensure_odc_connection_and_database_initialization, check_global_data_folder
+
 
 logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
 level = logging.DEBUG
@@ -231,7 +239,7 @@ def create_dataset_yaml_eo3(odc_product_name, metadata_dict):
     :return: `dict` of dataset metadata
     """
 
-    assert odc_product_name == metadata_dict['product_name']
+    assert odc_product_name == metadata_dict['metadata']['product']['name']
 
     # Band information
     measurements = {}
@@ -250,9 +258,6 @@ def create_dataset_yaml_eo3(odc_product_name, metadata_dict):
     dataset_yaml = {
         '$schema': metadata_dict.get('schema', 'https://schemas.opendatacube.org/dataset'),
         'id': metadata_dict['id'],
-        'product': {
-            'name': metadata_dict['product_name'],
-        },
         'crs': metadata_dict['crs'],
         'geometry': {
             'type': 'Polygon',
@@ -275,9 +280,7 @@ def create_dataset_yaml_eo3(odc_product_name, metadata_dict):
         'lineage': metadata_dict.get('lineage')
     }
 
-    # Add additional key-value pairs which are not part of the default metadata
-    if metadata_dict.get('additions'):
-        dataset_yaml.update(metadata_dict['additions'])
+    dataset_yaml.update(metadata_dict['metadata'])
 
     return dataset_yaml
 
@@ -339,7 +342,8 @@ def main():
                                                       args.port,
                                                       args.user,
                                                       args.password,
-                                                      '')
+                                                      '',
+                                                      DATACUBE_CONF)
 
     # Set and check global data folder
     global_data_folder = os.path.join(BASE_FOLDER, DATA_FOLDER)

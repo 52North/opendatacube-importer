@@ -35,7 +35,7 @@ import yaml
 # from pyproj import CRS
 
 from .base import BaseLoader
-from utils import calc_sha256, ensure_odc_connection_and_database_initialization, unzip, verify_database_connection
+from utils import calc_sha256, unzip
 
 # Band definitions for product metadata
 S2_BANDS = {
@@ -265,8 +265,6 @@ class AnthroprotectLoader(BaseLoader):
                 'band': idx + 1
             }
 
-        metadata = self._create_metadata_document(odc_product_name)
-
         # Extract geo-information from file
         geotiff = rasterio.open(dataset)
         bbox = geotiff.bounds
@@ -281,7 +279,7 @@ class AnthroprotectLoader(BaseLoader):
 
         dataset_metadata = {
             'id': str(uuid.uuid5(uuid.NAMESPACE_URL, dataset)),
-            'product_name': odc_product_name,
+            'metadata': self._create_metadata_document(odc_product_name),
             'crs': geotiff.crs.to_string(),
             'polygon': [[
                 [
@@ -326,13 +324,8 @@ class AnthroprotectLoader(BaseLoader):
             'datetime': '2020-08-01T12:00:00.00Z',
             'processing_datetime': '2021-10-12T12:00:00.00Z',
             'file_format': 'GeoTIFF',
-            'lineage': {},
-            'additions': {
-                'keywords': metadata['keywords'],
-                'links': metadata['links']
-            }
+            'lineage': {}
         }
-
         return dataset_metadata
 
     def download(self, global_data_folder):

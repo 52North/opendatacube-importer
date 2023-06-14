@@ -1,4 +1,4 @@
-# Copyright (C) 2022 52°North Spatial Information Research GmbH
+# Copyright (C) 2022-2023 52°North Spatial Information Research GmbH
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as published
@@ -28,14 +28,13 @@ from contextlib import closing
 import hashlib
 import logging
 import os
-import psycopg2
 import socket
 import subprocess
 import sys
-import yaml
 import zipfile
 
-datacube_conf = 'datacube.conf'
+import psycopg2
+
 
 # logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
 # level = logging.DEBUG
@@ -76,12 +75,13 @@ def verify_database_connection(db_name: str, db_host: str, db_port: int, db_user
 
 
 def ensure_odc_connection_and_database_initialization(db_name: str, db_host: str, db_port: int, db_user: str,
-                                                      db_pw: str, binary_home: str) -> None:
-    # Write datacube.conf to disk
+                                                      db_pw: str, binary_home: str,
+                                                      datacube_conf_file: str = 'datacube.conf') -> None:
+    # Make sure that a datacube.conf file exists and the database schema is initialised
     #
     # https://datacube-core.readthedocs.io/en/latest/ops/config.html#configuration-via-environment-variables
     #
-    with closing(open(datacube_conf, 'w')) as odc_config:
+    with closing(open(datacube_conf_file, 'w')) as odc_config:
         odc_config.write("""[default]
 db_database: {}
 db_hostname: {}
@@ -92,7 +92,7 @@ index_driver: default
 """.format(db_name, db_host, db_port, db_user, db_pw))
 
     # Check datacube database init status
-    cmd = subprocess.Popen("{}datacube --config {} system check".format(binary_home, datacube_conf),
+    cmd = subprocess.Popen("{}datacube --config {} system check".format(binary_home, datacube_conf_file),
                            stdout=subprocess.PIPE, stderr=None, shell=True, bufsize=0)
     output = cmd.communicate()[0].decode()
 
@@ -103,7 +103,7 @@ index_driver: default
 
             logger.info("OpenDataCube database is not initialized. Doing it now...")
 
-            cmd = subprocess.Popen("{}datacube --config {} system init".format(binary_home, datacube_conf),
+            cmd = subprocess.Popen("{}datacube --config {} system init".format(binary_home, datacube_conf_file),
                                    stdout=subprocess.PIPE, stderr=None, shell=True, bufsize=0)
             output = cmd.communicate()[0].decode()
 

@@ -96,8 +96,6 @@ class NetCDFLoader(BaseLoader):
         :return: `dict` of dataset metadata
         """
 
-        metadata = self._create_metadata_document(odc_product_name)
-
         # Extract geo-information from file
         # Read the dataset with decode_coords='all' to get crs
         ds_nc = xarray.open_dataset(dataset, decode_coords='all')
@@ -129,8 +127,8 @@ class NetCDFLoader(BaseLoader):
         # Metadata dictionary to create dataset yaml
         dataset_metadata = {
             'id': str(uuid.uuid5(uuid.NAMESPACE_URL, dataset)),
+            'metadata': self._create_metadata_document(odc_product_name),
             'schema': 'https://schemas.opendatacube.org/dataset',
-            'product_name': 'waves',
             'crs': str(ds_nc.rio.crs),
             'polygon': polygon,
             'shape': ds_shape,
@@ -141,13 +139,8 @@ class NetCDFLoader(BaseLoader):
             'datetime': str(ds_nc.time.values[0]),
             'processing_datetime': str(ds_nc.time.values[0]),
             'file_format': 'NETCDF',
-            'lineage': {}}
-
-        # 'additions': {
-        #     'keywords': metadata['keywords'],
-        #     'links': metadata['links']
-        # }
-
+            'lineage': {},
+        }
         return dataset_metadata
 
     def download(self, global_data_folder):

@@ -35,6 +35,7 @@
 FROM python:3-slim-buster
 
 ENV DB_HOST=
+ENV DB_PORT=5432
 ENV DB_USER=
 ENV DB_PASSWORD=
 ENV DB=
@@ -82,6 +83,7 @@ CMD python ./odc_importer/odc.py --host="$DB_HOST" \
                                  --user="$DB_USER" \
                                  --password="$DB_PASSWORD" \
                                  --db="$DB" \
+                                 --port="$DB_PORT" \
                                  --no-ping="$NO_PING" \
                                  --sleep="$SLEEP" \
                                  --max-retries="$MAX_RETRIES"
