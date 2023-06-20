@@ -298,15 +298,11 @@ def create_product_yaml_eo3(odc_product_name, metadata_dict):
 
     measurements = []
     for measurement in metadata_dict['measurements']:
-        measurements.append(
-            {
-                'name': measurement,
-                'dtype': metadata_dict['measurements'][measurement]['dtype'],
-                'units': metadata_dict['measurements'][measurement]['units'],
-                'nodata': metadata_dict['measurements'][measurement]['nodata'],
-                'aliases': metadata_dict['measurements'][measurement]['aliases'],
-            }
-        )
+        temp_dict = {
+            'name': measurement
+        }
+        temp_dict.update(metadata_dict['measurements'][measurement])
+        measurements.append(temp_dict)
 
     product_yaml = {
         'metadata_type': 'eo3',

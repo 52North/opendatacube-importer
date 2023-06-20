@@ -30,37 +30,41 @@ import yaml
 
 from .netcdf import NetCDFLoader
 
+# ------------------------------------------- #
+#              Band definitions               #
+# ------------------------------------------- #
 
-# Band definitions for product metadata
+# NetCDF data types: https://docs.unidata.ucar.edu/nug/current/md_types.html
+
 gfs_measurements = {
     'Temperature_surface': {
-        'aliases': ['Temperature Surface'],
-        'dtype': 'float64',
-        'nodata': 0.0,
+        'aliases': ['TMP'],
+        'dtype': 'float32',
+        'nodata': 'NaN',
         'units': 'K',
     },
     'Pressure_reduced_to_MSL_msl': {
-        'aliases': ['Pressure reduced to MSL'],
-        'dtype': 'float64',
-        'nodata': 0.0,
-        'units': '1'
+        'aliases': ['PRMSL'],
+        'dtype': 'float32',
+        'nodata': 'NaN',
+        'units': 'Pa'
     },
     'Wind_speed_gust_surface': {
-        'aliases': ['Wind speed gust surface'],
-        'dtype': 'float64',
-        'nodata': 0.0,
-        'units': '1',
+        'aliases': ['GUST'],
+        'dtype': 'float32',
+        'nodata': 'NaN',
+        'units': 'm/s',
     },
     'u_component_of_wind_height_above_ground': {
-        'aliases': ['u_wind_height_above_ground'],
-        'dtype': 'float64',
-        'nodata': 0.0,
+        'aliases': ['u_wind_height_above_ground', 'UGRD'],
+        'dtype': 'float32',
+        'nodata': 'NaN',
         'units': 'm/s',
     },
     'v_component_of_wind_height_above_ground': {
-        'aliases': ['v_wind_height_above_ground'],
-        'dtype': 'float64',
-        'nodata': 0.0,
+        'aliases': ['v_wind_height_above_ground', 'VGRD'],
+        'dtype': 'float32',
+        'nodata': 'NaN',
         'units': 'm/s',
     },
     # 'u-component_of_wind_sigma': {

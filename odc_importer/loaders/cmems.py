@@ -54,33 +54,43 @@ logger = logging.getLogger(__name__)
 #              Band definitions               #
 # ------------------------------------------- #
 
+# NetCDF data types: https://docs.unidata.ucar.edu/nug/current/md_types.html
+
 # waves
 waves_measurements = {
     'VHM0': {
         'aliases': ['sea_surface_wave_significant_height'],
-        'dtype': 'float32',
-        'nodata': -999,
+        'dtype': 'int16',
+        'nodata': -32767,
         'units': 'm',
+        'scale_factor': 0.01,
+        'add_offset': 0.0
     },
     'VTPK': {
         'aliases': ['sea_surface_wave_period_at_variance_spectral_density_maximum'],
-        'dtype': 'float32',
-        'nodata': -999,
-        'units': 's'
+        'dtype': 'int16',
+        'nodata': -32767,
+        'units': 's',
+        'scale_factor': 0.01,
+        'add_offset': 0.0
     },
     'VMDR': {
         'aliases': ['sea_surface_wave_from_direction'],
-        'dtype': 'float32',
-        'nodata': -999,
+        'dtype': 'int16',
+        'nodata': -32767,
         'units': 'degree',
+        'scale_factor': 0.01,
+        'add_offset': 180.0
     },
     # 'VPED': {
     #     'aliases': ['sea_surface_wave_from_direction_at_variance_spectral_density_maximum'],
-    #     'dtype': 'float32',
+    #     'dtype': 'int16',
     #     'nodata': -999,
     #     'units': 'degree',
+    #     'scale_factor': 0.01,
+    #     'add_offset': 0.0
     # }
-    }
+}
 
 # currents
 currents_measurements = {
