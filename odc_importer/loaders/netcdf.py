@@ -27,10 +27,12 @@
 import logging
 import os
 import uuid
+import datetime
 
 import numpy as np
 import rioxarray
 import xarray
+
 
 from .base import BaseLoader
 
@@ -101,8 +103,14 @@ class NetCDFLoader(BaseLoader):
         ds_nc = xarray.open_dataset(dataset, decode_coords='all')
 
         # Extract polygon geometry from the dataset using numpy array
-        latitudes = np.array(ds_nc.coords['latitude'][:])
-        longitudes = np.array(ds_nc.coords['longitude'][:])
+        if 'latitude' in list(ds_nc.coords.keys()):
+            latitudes = np.array(ds_nc.coords['latitude'][:])
+            longitudes = np.array(ds_nc.coords['longitude'][:])
+        elif 'lat' in list(ds_nc.coords.keys()):
+            latitudes = np.array(ds_nc.coords['lat'][:])
+            longitudes = np.array(ds_nc.coords['lon'][:]) 
+            
+        logger.info(f"Latitude: {latitudes} and Longitude: {longitudes}")   
         min_lat = float(min(latitudes))
         max_lat = float(max(latitudes))
         min_lon = float(min(longitudes))
@@ -125,23 +133,47 @@ class NetCDFLoader(BaseLoader):
             }
 
         # Metadata dictionary to create dataset yaml
-        dataset_metadata = {
-            'id': str(uuid.uuid5(uuid.NAMESPACE_URL, dataset)),
-            'metadata': self._create_metadata_document(odc_product_name),
-            'schema': 'https://schemas.opendatacube.org/dataset',
-            'crs': str(ds_nc.rio.crs),
-            'polygon': polygon,
-            'shape': ds_shape,
-            'transform': dataset_transform,
-            'bands': measurement_dict,
-            'platform': 'na',
-            'instrument': 'na',
-            'datetime': str(ds_nc.time.values[0]),
-            'processing_datetime': str(ds_nc.time.values[0]),
-            'file_format': 'NETCDF',
-            'lineage': {},
-        }
-        return dataset_metadata
+        try:
+            if 'time' not in list(ds_nc.coords.keys()):
+                dataset_metadata = {
+                    'id': str(uuid.uuid5(uuid.NAMESPACE_URL, dataset)),
+                    'metadata': self._create_metadata_document(odc_product_name),
+                    'schema': 'https://schemas.opendatacube.org/dataset',
+                    'crs': str(ds_nc.rio.crs),
+                    'polygon': polygon,
+                    'shape': ds_shape,
+                    'transform': dataset_transform,
+                    'bands': measurement_dict,
+                    'platform': 'na',
+                    'instrument': 'na',
+                    'datetime': str(datetime.datetime.now()),
+                    'processing_datetime': str(datetime.datetime.now()),#str(ds_nc.time.values[0]),
+                    'file_format': 'NETCDF',
+                    'lineage': {},
+                }
+                return dataset_metadata
+            
+            else:
+                dataset_metadata = {
+                    'id': str(uuid.uuid5(uuid.NAMESPACE_URL, dataset)),
+                    'metadata': self._create_metadata_document(odc_product_name),
+                    'schema': 'https://schemas.opendatacube.org/dataset',
+                    'crs': str(ds_nc.rio.crs),
+                    'polygon': polygon,
+                    'shape': ds_shape,
+                    'transform': dataset_transform,
+                    'bands': measurement_dict,
+                    'platform': 'na',
+                    'instrument': 'na',
+                    'datetime': str(ds_nc.time.values[0]),
+                    'processing_datetime': str(ds_nc.time.values[0]),
+                    'file_format': 'NETCDF',
+                    'lineage': {},
+                }
+                return dataset_metadata
+                
+        except Exception as err:
+            logger.info(err)
 
     def download(self, global_data_folder):
         raise NotImplementedError("Implement this method in subclass!")

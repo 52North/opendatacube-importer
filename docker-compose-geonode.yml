@@ -1,30 +1,31 @@
 version: '3'
 services:
   opendatacube-importer:
-#    image: 52north/opendatacube-importer:latest
+    #    image: 52north/opendatacube-importer:latest
     build:
       context: .
     environment:
-      - CMEMS_CURRENTS_ENABLED=True
-      - CMEMS_PHYSICS_ENABLED=True
-      - CMEMS_WAVES_ENABLED=True
-      - GFS_ENABLED=True
+      - CMEMS_CURRENTS_ENABLED=False
+      - CMEMS_PHYSICS_ENABLED=False
+      - CMEMS_WAVES_ENABLED=False
+      - GFS_ENABLED=False
+      - WATER_DEPTH_ENABLED=True
     env_file:
       - docker.geonode.env
     volumes:
       - odc-data:/odc/data
-#    depends_on:
-#      - db
+    #    depends_on:
+    #      - db
     networks:
-      - maridata-gn-dev_default
+      - 52n-gn-dev_default
 #    tty: true
 #    command: "/bin/bash"
 
 networks:
-  maridata-gn-dev_default:
+  52n-gn-dev_default:
     external: True
 
 volumes:
   odc-data:
-    name: maridata-gn-dev-odc
+    name: 52n-gn-dev-odc
     external: True
