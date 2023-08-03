@@ -1,14 +1,14 @@
 version: '3'
 services:
   opendatacube-importer:
-    #    image: 52north/opendatacube-importer:latest
+#    image: 52north/opendatacube-importer:latest
     build:
       context: .
     environment:
-      - CMEMS_CURRENTS_ENABLED=False
-      - CMEMS_PHYSICS_ENABLED=False
-      - CMEMS_WAVES_ENABLED=False
-      - GFS_ENABLED=False
+      - CMEMS_CURRENTS_ENABLED=True
+      - CMEMS_PHYSICS_ENABLED=True
+      - CMEMS_WAVES_ENABLED=True
+      - GFS_ENABLED=True
       - WATER_DEPTH_ENABLED=True
     env_file:
       - docker.geonode.env
