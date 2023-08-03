@@ -24,7 +24,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 # Public License for more details.
 #
-
 import ast
 import os
 
@@ -74,7 +73,7 @@ GFS_ENABLED = ast.literal_eval(os.getenv('GFS_ENABLED', 'False'))
 #
 # WATER DEPTH data source (https://www.ncei.noaa.gov/products/etopo-global-relief-model)
 #
-WATER_DEPTH_ENABLED = ast.literal_eval(os.getenv('WATER_DEPTH_ENABLED', 'True'))
+WATER_DEPTH_ENABLED = ast.literal_eval(os.getenv('WATER_DEPTH_ENABLED', 'False'))
 
 #
 # Data sources to be added to Open Data Cube
