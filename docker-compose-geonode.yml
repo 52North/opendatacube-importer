@@ -17,15 +17,15 @@ services:
     #    depends_on:
     #      - db
     networks:
-      - 52n-gn-dev_default
+      - maridata-gn-dev_default
 #    tty: true
 #    command: "/bin/bash"
 
 networks:
-  52n-gn-dev_default:
+  maridata-gn-dev_default:
     external: True
 
 volumes:
   odc-data:
-    name: 52n-gn-dev-odc
+    name: maridata-gn-dev-odc-data
     external: True
