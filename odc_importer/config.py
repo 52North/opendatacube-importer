@@ -24,11 +24,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 # Public License for more details.
 #
+import ast
 import os
 
 from loaders.anthroprotect import AnthroprotectLoader
 from loaders.cmems import CmemsWavesLoader, CmemsCurrentsLoader, CmemsPhysicsLoader
 from loaders.gfs import GfsLoader
+from loaders.water_depth import WaterDepthLoader
 
 #
 # Open Data Cube configuration
@@ -53,25 +55,32 @@ DATA_FOLDER = os.getenv('DATA_FOLDER', 'data')
 # AnthroProtect data source (http://rs.ipb.uni-bonn.de/data/anthroprotect/)
 # Data source size: 19,5 GB (anthroprotect.zip) -> 48,7 GB (unzipped)
 #
-ANTHROPROTECT_ENABLED = os.getenv('ANTHROPROTECT_ENABLED', False)
+ANTHROPROTECT_ENABLED = ast.literal_eval(os.getenv('ANTHROPROTECT_ENABLED', 'False'))
 
 #
 # CMEMS data source (https://data.marine.copernicus.eu/products)
 #
-CMEMS_CURRENTS_ENABLED = os.getenv('CMEMS_CURRENTS_ENABLED', False)
-CMEMS_PHYSICS_ENABLED = os.getenv('CMEMS_PHYSICS_ENABLED', False)
-CMEMS_WAVES_ENABLED = os.getenv('CMEMS_WAVES_ENABLED', False)
+CMEMS_CURRENTS_ENABLED = ast.literal_eval(os.getenv('CMEMS_CURRENTS_ENABLED', 'False'))
+CMEMS_PHYSICS_ENABLED = ast.literal_eval(os.getenv('CMEMS_PHYSICS_ENABLED', 'False'))
+CMEMS_WAVES_ENABLED = ast.literal_eval(os.getenv('CMEMS_WAVES_ENABLED', 'False'))
 
 #
 # GFS data source (https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast)
 #
-GFS_ENABLED = os.getenv('GFS_ENABLED', False)
+GFS_ENABLED = ast.literal_eval(os.getenv('GFS_ENABLED', 'False'))
+
+
+#
+# WATER DEPTH data source (https://www.ncei.noaa.gov/products/etopo-global-relief-model)
+#
+WATER_DEPTH_ENABLED = ast.literal_eval(os.getenv('WATER_DEPTH_ENABLED', 'False'))
 
 #
 # Data sources to be added to Open Data Cube
 # tuples of data source descriptor and loader class
 #
 DATASOURCES = []
+
 
 if ANTHROPROTECT_ENABLED:
     DATASOURCES.append(('anthroprotect', AnthroprotectLoader))
@@ -87,3 +96,6 @@ if CMEMS_WAVES_ENABLED:
 
 if GFS_ENABLED:
     DATASOURCES.append(('gfs', GfsLoader))
+    
+if WATER_DEPTH_ENABLED:
+    DATASOURCES.append(('water_depth', WaterDepthLoader))
