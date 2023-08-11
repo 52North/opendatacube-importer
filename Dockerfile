@@ -45,6 +45,7 @@ ENV SLEEP=2
 ENV PYTHONUNBUFFERED=1
 ENV BASE_FOLDER=/odc
 ENV DATA_FOLDER=data
+ENV PERIODIC=False
 ARG HOME=${BASE_FOLDER}
 
 LABEL maintainer="Pontius, Martin <m.pontius@52north.org>" \

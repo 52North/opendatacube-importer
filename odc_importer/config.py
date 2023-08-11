@@ -99,3 +99,15 @@ if GFS_ENABLED:
     
 if WATER_DEPTH_ENABLED:
     DATASOURCES.append(('water_depth', WaterDepthLoader))
+
+#
+# Settings for periodic import
+# Reference: https://schedule.readthedocs.io/en/stable/index.html
+#
+PERIODIC = ast.literal_eval(os.getenv('PERIODIC', 'False'))
+PERIODIC_EVERY = ast.literal_eval(os.getenv('PERIODIC_EVERY')) if os.getenv('PERIODIC_EVERY') else None
+PERIODIC_UNIT = os.getenv('PERIODIC_UNIT')
+PERIODIC_AT = os.getenv('PERIODIC_AT')
+PERIODIC_TIMEZONE = os.getenv('PERIODIC_TIMEZONE', 'UTC')
+PERIODIC_UNTIL = os.getenv('PERIODIC_UNTIL')
+PERIODIC_SLEEP = ast.literal_eval(os.getenv('PERIODIC_SLEEP', '1'))

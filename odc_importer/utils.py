@@ -31,10 +31,11 @@ import os
 import socket
 import subprocess
 import sys
+import time
 import zipfile
 
 import psycopg2
-
+import schedule
 
 # logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
 # level = logging.DEBUG
@@ -154,3 +155,66 @@ def calc_sha256(filename):
         for byte_block in iter(lambda: f.read(4096), b""):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
+
+
+def run_periodic(func, every, unit, at=None, timezone='UTC', until=None, sleep=1):
+    """
+    Set up schedule and run <func> with this schedule.
+    :param func: function
+    :param every: int
+    :param unit: str
+    :param at: str
+    :param timezone: str
+    :param until: str
+    :param sleep: int
+    """
+    job = None
+    if unit.lower() == 'seconds':
+        job = schedule.every(every).seconds
+    if unit.lower() == 'minutes':
+        job = schedule.every(every).minutes
+    if unit.lower() == 'hours':
+        job = schedule.every(every).hours
+    if unit.lower() == 'days':
+        job = schedule.every(every).days
+    if unit.lower() == 'weeks':
+        job = schedule.every(every).weeks
+    if unit.lower() == 'monday':
+        job = schedule.every().monday
+    if unit.lower() == 'tuesday':
+        job = schedule.every().tuesday
+    if unit.lower() == 'wednesday':
+        job = schedule.every().wednesday
+    if unit.lower() == 'thursday':
+        job = schedule.every().thursday
+    if unit.lower() == 'friday':
+        job = schedule.every().friday
+    if unit.lower() == 'saturday':
+        job = schedule.every().saturday
+    if unit.lower() == 'sunday':
+        job = schedule.every().sunday
+
+    if not job:
+        logger.error(f"Periodic mode chosen, but schedule job could not be created."
+                     f"Check the environment variables PERIODIC_EVERY and PERIODIC_UNIT.")
+        exit(1)
+
+    msg = f"{every} {unit}"
+    if at:
+        job = job.at(at, timezone)
+        msg += f" at {at}, {timezone},"
+    if until:
+        job = job.until(until)
+        msg += f" until {until}"
+    job.do(func)
+
+    logger.info(f"""
+    Periodic mode chosen
+    ---------------
+    Open Data Cube importer runs every {msg}.
+    Sleeping time between runs at least: {sleep} s.
+    """)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(sleep)

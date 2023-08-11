@@ -41,8 +41,10 @@ import datacube
 import yaml
 from datacube.index.hl import Doc2Dataset
 
-from config import BASE_FOLDER, DATACUBE_CONF, DATA_FOLDER, DATASOURCES
-from utils import verify_database_connection, ensure_odc_connection_and_database_initialization, check_global_data_folder
+from config import BASE_FOLDER, DATACUBE_CONF, DATA_FOLDER, DATASOURCES, \
+    PERIODIC, PERIODIC_EVERY, PERIODIC_UNIT, PERIODIC_AT, PERIODIC_TIMEZONE, PERIODIC_UNTIL, PERIODIC_SLEEP
+from utils import verify_database_connection, ensure_odc_connection_and_database_initialization, \
+    check_global_data_folder, run_periodic
 
 
 logging_config_file = os.path.join(os.path.dirname(__file__), 'logging.yaml')
@@ -373,4 +375,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if PERIODIC:
+        run_periodic(main, PERIODIC_EVERY, PERIODIC_UNIT, PERIODIC_AT, PERIODIC_TIMEZONE, PERIODIC_UNTIL,
+                     PERIODIC_SLEEP)
+    else:
+        main()
