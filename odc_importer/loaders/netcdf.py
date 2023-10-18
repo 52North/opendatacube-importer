@@ -115,14 +115,14 @@ class NetCDFLoader(BaseLoader):
         max_lat = float(max(latitudes))
         min_lon = float(min(longitudes))
         max_lon = float(max(longitudes))
-        polygon = [[[min_lat, min_lon], [min_lat, max_lon], [
-            max_lat, max_lon], [max_lat, min_lon], [min_lat, min_lon]]]
+        polygon = [[[min_lon, min_lat], [max_lon, min_lat], [
+            max_lon, max_lat], [min_lon, max_lat], [min_lon, min_lat]]]
 
         # Extract the transformation matrix
         dataset_transform = list(ds_nc.rio.transform())
 
-        # Extract the shape of dataset
-        ds_shape = [ds_nc.rio.shape[1], ds_nc.rio.shape[0]]
+        # Extract the shape of dataset (ODC manual: "shape: Tuple[ny: int, nx: int]")
+        ds_shape = [ds_nc.rio.shape[0], ds_nc.rio.shape[1]]
 
         # Generate dictionary for all dataset measurements
         measurement_dict = {}
