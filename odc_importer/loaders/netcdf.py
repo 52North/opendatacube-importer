@@ -24,6 +24,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 # Public License for more details.
 #
+import copy
 import logging
 import os
 import uuid
@@ -81,12 +82,19 @@ class NetCDFLoader(BaseLoader):
         :return: `dict` of product metadata
         """
 
+        measurement_dict = copy.deepcopy(self.measurement_dict)
+
+        # Remove layer because the 'layer' property is not allowed in the ODC product metadata measurements definition
+        for var in measurement_dict.keys():
+            if 'layer' in measurement_dict[var]:
+                del measurement_dict[var]['layer']
+
         # Metadata dictionary to create product yaml
         product_metadata = {
             'name': odc_product_name,
             'description': odc_product_name,
             'metadata': self._create_metadata_document(odc_product_name),
-            'measurements': self.measurement_dict,
+            'measurements': measurement_dict,
         }
         return product_metadata
 
@@ -127,9 +135,13 @@ class NetCDFLoader(BaseLoader):
         # Generate dictionary for all dataset measurements
         measurement_dict = {}
         for var in self.measurement_dict.keys():
+            if 'layer' in self.measurement_dict[var]:
+                layer = self.measurement_dict[var]['layer']
+            else:
+                layer = var
             measurement_dict[var] = {
                 'path': dataset,
-                'layer': var
+                'layer': layer
             }
 
         # Metadata dictionary to create dataset yaml

@@ -56,13 +56,15 @@ gfs_measurements = {
         'units': 'm/s',
     },
     'u_component_of_wind_height_above_ground': {
-        'aliases': ['u_wind_height_above_ground', 'UGRD'],
+        'aliases': ['u-component_of_wind_height_above_ground', 'u_wind_height_above_ground', 'UGRD'],
+        'layer': 'u-component_of_wind_height_above_ground',
         'dtype': 'float32',
         'nodata': 'NaN',
         'units': 'm/s',
     },
     'v_component_of_wind_height_above_ground': {
-        'aliases': ['v_wind_height_above_ground', 'VGRD'],
+        'aliases': ['v-component_of_wind_height_above_ground', 'v_wind_height_above_ground', 'VGRD'],
+        'layer': 'v-component_of_wind_height_above_ground',
         'dtype': 'float32',
         'nodata': 'NaN',
         'units': 'm/s',
