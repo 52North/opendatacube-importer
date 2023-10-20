@@ -94,13 +94,13 @@ The importer contains a loader to import weather forecasts from GFS (https://www
 The data source can be enabled using the environment variable GFS_ENABLED=<True|False>. Folder and ODC product name can be changed using the environment variables GFS_FOLDER and GFS_PRODUCT_NAME.
 </details>
 
-### 2.5) Water depth data (NOAA)
+### 2.5) Global relief data (NOAA)
 
 <details>
 <summary>Details</summary>
-The importer contains a loader to import water depth data from the National Centers for Environmental Information (NCEI, https://www.ncei.noaa.gov/products/etopo-global-relief-model) of the NOAA.
+The importer contains a loader to import global relief data from the National Centers for Environmental Information (NCEI, https://www.ncei.noaa.gov/products/etopo-global-relief-model) of the NOAA.
 
-The data source can be enabled using the environment variable WATER_DEPTH_ENABLED=<True|False>. Folder and ODC product name can be changed using the environment variables WATER_DEPTH_FOLDER and WATER_DEPTH_PRODUCT_NAME. The download url of the NetCDF file and the file name can be changed using the environment variables WATER_DEPTH_URL and WATER_DEPTH_FILE_NAME.
+The data source can be enabled using the environment variable GLOBAL_RELIEF_ENABLED=<True|False>. Folder and ODC product name can be changed using the environment variables GLOBAL_RELIEF_FOLDER and GLOBAL_RELIEF_PRODUCT_NAME. The download url of the NetCDF file and the file name can be changed using the environment variables GLOBAL_RELIEF_URL and GLOBAL_RELIEF_FILE_NAME.
 </details>
 
 

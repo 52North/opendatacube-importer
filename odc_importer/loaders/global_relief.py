@@ -34,9 +34,9 @@ import requests
 
 
 # NetCDF data types: https://docs.unidata.ucar.edu/nug/current/md_types.html
-water_depth_measurements = {
+global_relief_measurements = {
     'z': {
-        'aliases': ['water_depth', 'height'],
+        'aliases': ['global_relief', 'depth', 'water_depth', 'height', 'elevation', 'topography', 'bathymetry'],
         'dtype': 'float32',
         'nodata': 'NaN',
         'units': 'm',
@@ -63,26 +63,47 @@ else:
 logger = logging.getLogger(__name__)
 
 
-class WaterDepthLoader(NetCDFLoader):
+class GlobalReliefLoader(NetCDFLoader):
     """
-    A class for loading Water depth weather data.
+    A class for loading the ETOPO Global Relief Model into an ODC instance.
+    The NetCDF file format is used. GeoTIFF would in principle be available, but isn't implemented.
+
+    Model version:
+        - default: "bedrock elevation"
+        - options: "bedrock elevation", "ice surface elevation", "geoid height"
+                    The version can be changed using the environment variables GLOBAL_RELIEF_URL and
+                    GLOBAL_RELIEF_FILE_NAME
+
+    Model resolution:
+        - default: 30 Arc-Seconds
+        - options: 30 Arc-Seconds, 60 Arc-Seconds, [15 Arc-Seconds]
+                   The resolution can be changed using the environment variables GLOBAL_RELIEF_URL and
+                   GLOBAL_RELIEF_FILE_NAME
+                   Although a 15 Arc-Second resolution is in principle available, it can't be used yet because the
+                   dataset it is spread over multiple files which isn't supported yet
+
+    References:
+        - https://www.ncei.noaa.gov/products/etopo-global-relief-model
     """
-    measurement_dict = water_depth_measurements
+    measurement_dict = global_relief_measurements
 
     def __init__(self):
         super().__init__()
-        self.url = os.getenv('WATER_DEPTH_URL',
-                             'https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/30s/30s_bed_elev_netcdf/ETOPO_2022_v1_30s_N90W180_bed.nc')
-        self.folder = os.getenv('WATER_DEPTH_FOLDER', 'water_depth')
-        self.file_name = os.getenv('WATER_DEPTH_FILE_NAME', 'ETOPO_2022_v1_30s_N90W180_bed.nc')
+        self.url = os.getenv(
+            'GLOBAL_RELIEF_URL',
+            'https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/30s/30s_bed_elev_netcdf'
+            '/ETOPO_2022_v1_30s_N90W180_bed.nc'
+        )
+        self.folder = os.getenv('GLOBAL_RELIEF_FOLDER', 'global_relief')
+        self.file_name = os.getenv('GLOBAL_RELIEF_FILE_NAME', 'ETOPO_2022_v1_30s_N90W180_bed.nc')
         self.chunk_size = 8192  # in bytes
-        self.product_names = [os.getenv('WATER_DEPTH_PRODUCT_NAME', 'water_depth')]
+        self.product_names = [os.getenv('GLOBAL_RELIEF_PRODUCT_NAME', 'global_relief')]
 
     def download(self, global_data_folder):
         """
-        Download water depth data directly from ETOPO Global Relief Model
+        Download global relief data directly from ETOPO Global Relief Model
         :param global_data_folder:
-        :return: water depth nc file 
+        :return: bool, status of download
         """
         # Create output folder and output file
         out_folder = os.path.join(global_data_folder, self.folder)
@@ -96,8 +117,8 @@ class WaterDepthLoader(NetCDFLoader):
             logger.info(f"Creating {out_folder} ...")
             os.makedirs(out_folder, exist_ok=True)
 
-        # Download the water depth data (approx 1.7 GB)
-        logger.info('Start downloading water depth data')
+        # Download the global relief data (approx 1.7 GB for default settings)
+        logger.info('Start downloading global relief data')
         try:
             if not os.path.exists(file_output):
                 with requests.get(self.url, stream=True) as r:
@@ -108,7 +129,7 @@ class WaterDepthLoader(NetCDFLoader):
                 logger.info(f"Download of '{file_output}' successful")
                 return True
             else:
-                logger.info('Water depth data already exists')
+                logger.info('Global relief data already exists')
                 return True
         except Exception as err:
             logger.error(err)

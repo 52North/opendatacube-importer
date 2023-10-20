@@ -30,7 +30,7 @@ import os
 from loaders.anthroprotect import AnthroprotectLoader
 from loaders.cmems import CmemsWavesLoader, CmemsCurrentsLoader, CmemsPhysicsLoader
 from loaders.gfs import GfsLoader
-from loaders.water_depth import WaterDepthLoader
+from loaders.global_relief import GlobalReliefLoader
 
 #
 # Open Data Cube configuration
@@ -71,9 +71,9 @@ GFS_ENABLED = ast.literal_eval(os.getenv('GFS_ENABLED', 'False'))
 
 
 #
-# WATER DEPTH data source (https://www.ncei.noaa.gov/products/etopo-global-relief-model)
+# Global relief data source (https://www.ncei.noaa.gov/products/etopo-global-relief-model)
 #
-WATER_DEPTH_ENABLED = ast.literal_eval(os.getenv('WATER_DEPTH_ENABLED', 'False'))
+GLOBAL_RELIEF_ENABLED = ast.literal_eval(os.getenv('GLOBAL_RELIEF_ENABLED', 'False'))
 
 #
 # Data sources to be added to Open Data Cube
@@ -97,8 +97,8 @@ if CMEMS_WAVES_ENABLED:
 if GFS_ENABLED:
     DATASOURCES.append(('gfs', GfsLoader))
     
-if WATER_DEPTH_ENABLED:
-    DATASOURCES.append(('water_depth', WaterDepthLoader))
+if GLOBAL_RELIEF_ENABLED:
+    DATASOURCES.append(('global_relief', GlobalReliefLoader))
 
 #
 # Settings for periodic import
